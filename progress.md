@@ -1,79 +1,79 @@
 # notion-agent-cli Progress
 
-## Milestones
+## Milestones (Node.js/TypeScript Rewrite)
 
 | Milestone | Feature | Status |
 |-----------|---------|--------|
-| M9 | `notion db batch-add` + cache isolation fix | COMPLETE |
-| M10 | Remaining commands (block, comment, search, user) + db create/delete | COMPLETE |
-| M11 | Modes + Edge Case Hardening | COMPLETE |
-| M12 | Integration Test Suite (18-step KB pipeline) | COMPLETE |
-| M13 | Polish + PyPI Prep | COMPLETE |
+| M0 | Research & planning | COMPLETE |
+| M1 | Scaffold: package.json, tsconfig, CLI skeleton, auth commands | COMPLETE |
+| M2 | Core infrastructure: client.ts, errors.ts, output.ts, coerce.ts, modes.ts | COMPLETE |
+| M3 | Schema module: SchemaCache (TTL disk cache), PropertyResolver | COMPLETE |
+| M4 | db read commands: schema, query, info | COMPLETE |
+| M5 | db write commands: add, upsert, update-row, add-option, batch-add, create, delete, update-schema | COMPLETE |
+| M6 | page commands: create, get, get-property, set, append, delete, restore, move | COMPLETE |
+| M7 | block commands: list, get, append, update, delete | COMPLETE |
+| M8 | comment, search, user commands | COMPLETE |
+| M9 | Integration tests + CI/CD (GitHub Actions for Node.js) | COMPLETE |
+| M10 | Polish: skills, AGENTS.md, README, npm publish setup | COMPLETE |
 
-## M13 Notes
+## Step 0 — Repo Cleanup (2026-03-13)
 
-- **`pyproject.toml`:** Added `authors = [{name = "Henry Reith"}]`, `[project.urls]` block with Homepage/Repository/Issues, and `build>=1.0` to dev dependencies.
+- Deleted Python source: `notion/`, `tests/`, `pyproject.toml`
+- Rewrote `CLAUDE.md` for Node.js architecture
+- Updated `.gitignore` for Node.js
+- Updated `AGENTS.md` for Node.js
+- Updated `README.md` with npm install instructions
 
-- **`.github/workflows/ci.yml`:** Created CI workflow that runs tests on Python 3.10/3.11/3.12 on push/PR to main, excluding integration tests.
+## M1–M10 Implementation (2026-03-13)
 
-- **`.github/workflows/publish.yml`:** Created PyPI publish workflow triggered on `v*` tags using trusted publishing (OIDC, no secrets needed).
+Full Node.js/TypeScript rewrite completed in a single session.
 
-- **`DEPLOY.md`:** Created deployment guide covering manual PyPI upload, GitHub Actions tag-based release, installation verification, and Homebrew formula template.
+### Files Created
 
-- **`README.md`:** Replaced stub with comprehensive documentation including badges, why-not-MCP rationale, full command reference, output formats, exit codes table, and agent integration example.
+**Config & Build:**
+- `package.json` — `notion-agent-cli`, bin: `notion` + `notion-agent`
+- `tsconfig.json` — strict, ES2022, NodeNext modules
+- `vitest.config.ts` — unit test config (excludes integration/)
 
-- **Build verified:** `python -m build` produces `dist/notion_agent_cli-0.1.0.tar.gz` and `dist/notion_agent_cli-0.1.0-py3-none-any.whl` cleanly.
+**Source (`src/`):**
+- `errors.ts` — `ExitCode` enum (0–7), `die()` function
+- `config.ts` — `getToken()`, `setToken()`, `getConfigPath()` using native fs
+- `client.ts` — `createNotionClient()`, `normaliseId()`, re-exports `collectPaginatedAPI`
+- `output.ts` — `printJSON()`, `printTable()`, `printIds()`, `printId()`
+- `modes.ts` — `getMode()`, `confirm()` — auto/interactive/ci
+- `coerce.ts` — `parseKV()`, `readDataInput()`, `buildTypedFilter()`, `coerceValue()`, `markdownToBlocks()`, `looksLikeMarkdown()`
+- `schema.ts` — `SchemaCache` (15-min TTL, `~/.cache/notion-agent/schemas/`), `PropertyResolver`
+- `index.ts` — re-exports public API
+- `cli.ts` — Commander root entry point
+- `commands/auth.ts` — setup wizard, set-token, test, status
+- `commands/db.ts` — all 10 db subcommands
+- `commands/page.ts` — all 8 page subcommands
+- `commands/block.ts` — all 5 block subcommands
+- `commands/comment.ts` — add, list
+- `commands/search.ts` — search with filter, sort, pagination
+- `commands/user.ts` — list, get, me
 
-- **All 140 tests pass.**
+**Tests (`tests/`):**
+- `unit/coerce.test.ts` — parseKV, coerceValue (all 10 types), markdownToBlocks, buildTypedFilter
+- `unit/schema.test.ts` — SchemaCache (hit/miss/TTL/invalidate), PropertyResolver
+- `unit/output.test.ts` — printJSON, printId, printIds
+- `unit/modes.test.ts` — getMode with flag/env/TTY detection
+- `unit/auth.test.ts` — token env priority, normaliseId
+- `integration/kb-pipeline.test.ts` — 12-step live API test (skipped without env vars)
+- `fixtures/batch-5.json` — test fixture for batch-add
 
-## M12 Notes
+**CI/CD:**
+- `.github/workflows/ci.yml` — Node.js 18/20/22 matrix
+- `.github/workflows/publish.yml` — npm OIDC publish on v* tags
 
-- **`tests/integration/test_kb_pipeline.py`:** Replaced placeholder with full 18-step `TestKBPipeline` class covering: auth, DB create, schema fetch, add select options, idempotent add-option, 3x add entries, query all, query filter, upsert create, upsert update, batch-add dry-run, page get, page append, search, user me, cleanup/delete DB. Auto-skipped unless `NOTION_API_KEY` and `NOTION_TEST_PARENT_ID` are set.
+### Implementation Notes
 
-- **`tests/integration/__init__.py`:** Confirmed present from M1.
-
-## M11 Notes
-
-- **`notion/modes.py`:** Updated `get_mode()` to validate `NOTION_MODE` env var against allowed values (`interactive`, `auto`, `ci`) — invalid values now fall through to TTY detection. Updated `confirm()` signature: `mode` param now defaults to `None` (calls `get_mode()` internally instead of hardcoding `"auto"`).
-
-- **`tests/test_modes.py`:** Replaced placeholder with 12 tests covering `get_mode()` (explicit flag priority, env var, env var override, invalid env fallthrough, TTY detection) and `confirm()` (auto/ci always True, interactive prompts, cancellation, no-mode uses get_mode).
-
-- **`notion/commands/db.py`:** Added `--no-cache` flag to `add` and `upsert` commands. When `--no-cache` is set, the schema cache is neither read nor written.
-
-- **`notion/schema.py`:** `PropertyResolver.resolve_all()` now skips properties with `None` values instead of passing them to the coercion layer.
-
-- **`notion/client.py`:** `_normalise_id` already handled all four edge cases correctly (URL with slug, URL without slug, UUID with hyphens, plain 32-char hex). No changes needed.
-
-- **All 140 tests pass** (129 previously + 9 new modes tests + 2 from test count growth).
-
-## M10 Notes
-
-- **`notion/commands/block.py`:** Implemented `list`, `get`, `append`, `update`, `delete`. Uses `client.paginate("GET", ...)` for listing children. `append` builds a `type_map` for common block types, falling back to paragraph. `delete` calls `client.delete()` and returns `{"status": "deleted", "id": ...}`.
-
-- **`notion/commands/comment.py`:** Implemented `add` (POST `/comments`) and `list` (GET `/comments?block_id=...` via `client.paginate` with `params=`).
-
-- **`notion/commands/search.py`:** Implemented `search` command with `--type`, `--sort`, `--limit`, `--page-all`, `--output` options. Registered as a standalone command (not a group) in `cli.py`.
-
-- **`notion/commands/user.py`:** Implemented `list`, `get`, `me`. `list` paginates GET `/users`, `get` fetches `/users/{uid}`, `me` fetches `/users/me`.
-
-- **`db create`:** Replaced stub in `db.py`. Accepts `parent_id`, `title`, optional `--data` (JSON for extra properties), `--output json|id`. Always adds `Name: {title: {}}` as the default title property.
-
-- **`db delete`:** Replaced stub. Archives the database via PATCH `{"archived": True}`. Respects `--confirm` flag; in interactive mode prompts for confirmation.
-
-- **Test files:** Replaced placeholder test files for `test_block.py`, `test_comment.py`, `test_search.py`, `test_user.py` with full test suites. Used valid 32-char hex IDs throughout to avoid `_normalise_id` pass-through issues.
-
-- **All 129 tests pass.**
-
-## M9 Notes
-
-- **Cache isolation fix:** Added `isolate_schema_cache` autouse fixture to `tests/conftest.py` that monkeypatches `notion.schema.CACHE_DIR` to a per-test `tmp_path / "schemas"` directory. This prevents stale schemas from `~/.cache/notion-agent/schemas/` contaminating subsequent tests (was causing `test_add_multi_select_comma_separated` to exit 3).
-
-- **`notion db batch-add` implementation:** Replaced the `NotImplementedError` stub in `notion/commands/db.py` with the full implementation:
-  - Accepts `--data` as inline JSON array, `@file`, or `-` (stdin)
-  - Fetches schema once, validates all rows before any writes
-  - `--dry-run` flag: validates only, exits 7 (no writes)
-  - `--continue-on-error` flag: skips failed rows and continues
-  - Rate limiting: `time.sleep(0.34)` between requests (3 req/sec)
-  - Added `import time` at the top of `db.py`
-
-- **`tests/test_batch.py`:** Full test suite with 6 tests covering inline JSON, file input, dry-run, dry-run with validation errors, continue-on-error, and rate limiting. Uses `result.stdout` (not `result.output`) to avoid Click 8.2+ stderr-mixing in the test runner.
+- `conf` package replaced with native `fs` + JSON for simpler implementation (no ESM compat issues)
+- `db list-templates` exits with code 4 — not exposed in `@notionhq/client` v5 SDK
+- `db delete` uses `databases.update({ archived: true })` (SDK doesn't have a dedicated delete)
+- `page move` uses `pages.update({ parent: { page_id: newParent } })`
+- `block append` with `--type` + `--text` builds typed block bodies
+- `buildTypedFilter` handles all 10 property types with correct filter key selection
+- `markdownToBlocks` handles: h1/h2/h3, bullet/numbered lists, blockquote, code, divider, paragraph
+- Rate limiting in `batch-add`: 350ms sleep between requests (3 req/sec)
+- Schema cache uses file mtime for TTL (900s) — no embedded timestamp comparison needed

@@ -1,31 +1,7 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-*.egg-info/
+node_modules/
 dist/
-build/
-.eggs/
-
-# Virtual environments
-.venv/
-venv/
-env/
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Editor
-.vscode/
-.idea/
-*.swp
-
-# OS
-.DS_Store
-
-# Local config
 .env
+*.js.map
+coverage/
+.DS_Store
+*.tsbuildinfo

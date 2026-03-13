@@ -1,178 +1,149 @@
 # notion-agent-cli
 
-[![PyPI](https://img.shields.io/pypi/v/notion-agent-cli)](https://pypi.org/project/notion-agent-cli/)
-[![Python](https://img.shields.io/pypi/pyversions/notion-agent-cli)](https://pypi.org/project/notion-agent-cli/)
+[![npm](https://img.shields.io/npm/v/notion-agent-cli)](https://www.npmjs.com/package/notion-agent-cli)
+[![Node.js](https://img.shields.io/node/v/notion-agent-cli)](https://www.npmjs.com/package/notion-agent-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![CI](https://github.com/henryreith/notion-agent-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/henryreith/notion-agent-cli/actions)
+[![CI](https://github.com/henryreith/notion-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/henryreith/notion-cli/actions)
 
-Zero-overhead CLI for the Notion API — designed for AI agents and shell scripts.
+Zero-overhead CLI for the Notion API — designed for AI agents, shell scripts, and automation.
 
 ## Why not Notion MCP?
 
-Notion MCP loads **3,000–6,000 tokens** of tool definitions into your context window per session.
-`notion-agent-cli` has **zero overhead** — call it from subprocess, no context cost.
+The Notion MCP server is great for interactive use, but costs **3,000–6,000 tokens** per session
+just to load its tool definitions. When an AI agent calls Notion dozens of times per session,
+that overhead compounds. `notion-agent-cli` uses subprocess calls instead — zero token overhead,
+same functionality, plus higher-level helpers not in the MCP server.
 
-```python
-# In your AI agent:
-result = subprocess.run(
-    ["notion", "db", "query", DATABASE_ID, "--output", "json"],
-    capture_output=True, text=True
-)
-pages = json.loads(result.stdout)
-```
-
-## Install
+## Installation
 
 ```bash
-pip install notion-agent-cli
+npm install -g notion-agent-cli
+notion auth setup
 ```
 
 ## Quick Start
 
 ```bash
-export NOTION_API_KEY=secret_xxx
+# First-time setup (interactive wizard)
+notion auth setup
 
+# Or set token directly
+notion auth set-token secret_xxxx...
 notion auth test
-notion db schema <database-id>
-notion db query <database-id> --filter "Status:=:Active" --output table
-notion db add <database-id> "Name=My Page" "Status=Active"
-notion search "meeting notes" --type page
+
+# Query a database
+notion db query <db-id> --filter "Status:=:Active" --output table
+
+# Add a row
+notion db add <db-id> Name="My Item" Status="Active"
+
+# Search
+notion search "my query" --type page --output ids
 ```
 
-## Authentication
+## Commands
 
-```bash
-# Via environment variable (preferred for agents)
-export NOTION_API_KEY=secret_xxx
-
-# Via config file (persists across sessions)
-notion auth set-token secret_xxx
-notion auth status
+### Auth
+```
+notion auth setup              # Interactive wizard
+notion auth set-token <token>  # Store token directly
+notion auth test               # Verify connection
+notion auth status             # Show token + workspace
 ```
 
-## Command Reference
-
-### Database Commands
-
-```bash
-notion db schema <db-id>                    # Show schema
-notion db schema <db-id> --output properties  # Show property types
-notion db schema <db-id> --output options   # Show select options
-
-notion db query <db-id>
-notion db query <db-id> --filter "Status:=:Active"
-notion db query <db-id> --filter "Name:contains:foo" --output table
-notion db query <db-id> --page-all --output ids
-
-notion db add <db-id> "Name=My Page" "Status=Active" "Tags=python,cli"
-notion db add <db-id> --data '{"Name": "My Page"}' --output id
-notion db add <db-id> --data @data.json --add-options
-
-notion db upsert <db-id> --match "Name:My Page" "Status=Done"
-notion db update-row <page-id> "Status=Done"
-
-notion db add-option <db-id> Status --option "New Option" --color green
-notion db batch-add <db-id> --data @batch.json --dry-run
-notion db batch-add <db-id> --data - < batch.json
-
-notion db create <parent-page-id> "My Database"
-notion db delete <db-id> --confirm
-notion db update-schema <db-id> --data @schema-patch.json
+### Database
+```
+notion db schema <db-id>                              # Show schema
+notion db query <db-id> [--filter P:OP:V]...         # Query rows
+notion db info <db-id>                               # Raw metadata
+notion db add <db-id> [KEY=VALUE]...                 # Add row
+notion db upsert <db-id> --match P:V [KEY=VALUE]...  # Insert or update
+notion db update-row <page-id> [KEY=VALUE]...        # Update row
+notion db add-option <db-id> <prop> --option NAME    # Add select option
+notion db batch-add <db-id> --data @file.json        # Bulk insert
+notion db create <parent-id> <title>                 # Create database
+notion db delete <db-id>                             # Archive database
+notion db update-schema <db-id> --data JSON          # Update schema
 ```
 
-### Page Commands
-
-```bash
-notion page create <parent-id> --title "My Page"
-notion page get <page-id>
-notion page get <page-id> --output properties
-notion page get-property <page-id> Status
-notion page set <page-id> "Status=Done"
-notion page append <page-id> --data "## New Section\n\nContent here."
-notion page append <page-id> --data @content.md
-notion page delete <page-id> --confirm
-notion page restore <page-id>
+### Page
+```
+notion page create <parent-id> --title TITLE   # Create page
+notion page get <page-id>                      # Get page
+notion page get-property <page-id> <prop>      # Get property
+notion page set <page-id> [KEY=VALUE]...       # Update properties
+notion page append <page-id> --data MARKDOWN   # Append blocks
+notion page delete <page-id>                   # Archive page
+notion page restore <page-id>                  # Restore page
+notion page move <page-id> <new-parent-id>     # Move page
 ```
 
-### Block Commands
-
-```bash
-notion block list <page-id>
-notion block get <block-id>
-notion block append <page-id> --type heading_2 --text "New Section"
-notion block update <block-id> --data @update.json
-notion block delete <block-id>
+### Block
+```
+notion block list <block-id>                         # List children
+notion block get <block-id>                          # Get block
+notion block append <block-id> --type T --text TEXT  # Append block
+notion block update <block-id> --data JSON           # Update block
+notion block delete <block-id>                       # Delete block
 ```
 
-### Other Commands
-
-```bash
-notion search "query" --type page --limit 10
-notion comment add <page-id> "Great work!"
+### Comment / Search / User
+```
+notion comment add <page-id> <text>
 notion comment list <page-id>
+notion search [QUERY] [--type page|database] [--output json|ids]
 notion user list
+notion user get <user-id>
 notion user me
 ```
 
 ## Output Formats
 
-Most commands support `--output`:
-- `json` (default) — full Notion API response
-- `table` — human-readable table (db query)
-- `ids` — one ID per line (for piping)
-
-```bash
-# Pipe IDs into another command
-notion db query <db-id> --output ids | xargs -I{} notion page delete {} --confirm
-```
+Most commands support `--output json|table|ids|id`:
+- `json` — pretty-printed JSON (default)
+- `table` — formatted ASCII table
+- `ids` — one ID per line (good for scripting)
+- `id` — single ID (for create commands)
 
 ## Exit Codes
 
 | Code | Meaning |
 |------|---------|
 | 0 | Success |
-| 1 | Authentication error |
-| 2 | Not found |
+| 1 | Authentication failed |
+| 2 | Resource not found |
 | 3 | Validation error |
 | 4 | API error |
-| 5 | Already exists |
-| 6 | Ambiguous match (upsert) |
+| 5 | Resource already exists |
+| 6 | Upsert matched multiple rows |
 | 7 | Dry run completed |
 
-## Agent Integration Example
+## --data Input
 
-```python
-import subprocess
-import json
+Many commands accept `--data`:
+- `--data '{"key": "value"}'` — inline JSON
+- `--data @path/to/file.json` — read from file
+- `--data -` — read from stdin
 
-def notion_db_add(database_id: str, properties: dict) -> str:
-    """Add a page to a Notion database, returns page ID."""
-    result = subprocess.run(
-        ["notion", "db", "add", database_id, "--data", json.dumps(properties), "--output", "id"],
-        capture_output=True,
-        text=True,
-        timeout=30,
-    )
-    if result.returncode != 0:
-        error = json.loads(result.stderr)
-        raise RuntimeError(f"Notion error: {error['error']}")
-    return result.stdout.strip()
+## For AI Agents
 
-# Usage:
-page_id = notion_db_add(DATABASE_ID, {
-    "Name": "Meeting Notes 2024-01-15",
-    "Status": "Draft",
-    "Tags": "meeting,q1",
-})
+```bash
+# Use NOTION_API_KEY env var + NOTION_MODE=auto to suppress prompts
+export NOTION_API_KEY=secret_xxxx
+export NOTION_MODE=auto
+
+# All commands output JSON to stdout, errors to stderr
+notion db query <db-id> --output json 2>/dev/null
 ```
 
 ## Development
 
 ```bash
-git clone https://github.com/henryreith/notion-agent-cli
-cd notion-agent-cli
-pip install -e ".[dev]"
-pytest tests/ -v --ignore=tests/integration
+git clone https://github.com/henryreith/notion-cli
+cd notion-cli
+npm install
+npm run build
+npm test
 ```
 
 ## License
