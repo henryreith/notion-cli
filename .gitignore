@@ -5,3 +5,7 @@ dist/
 coverage/
 .DS_Store
 *.tsbuildinfo
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo

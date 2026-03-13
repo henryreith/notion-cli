@@ -141,16 +141,16 @@ Mode detection: `--mode` flag → `NOTION_MODE` env → TTY detection
 | Milestone | Description | Status |
 |-----------|-------------|--------|
 | M0 | Research & planning | COMPLETE |
-| M1 | Scaffold: package.json, tsconfig, CLI skeleton, auth commands | PENDING |
-| M2 | Core infrastructure: client.ts, errors.ts, output.ts, coerce.ts, modes.ts | PENDING |
-| M3 | Schema module: SchemaCache, PropertyResolver | PENDING |
-| M4 | db read commands: schema, query, info, list-templates | PENDING |
-| M5 | db write commands: add, upsert, update-row, add-option, batch-add, create, delete, update-schema | PENDING |
-| M6 | page commands: create, get, get-property, set, append, delete, restore, move | PENDING |
-| M7 | block commands: list, get, append, update, delete | PENDING |
-| M8 | comment, search, user commands | PENDING |
-| M9 | Integration tests + CI/CD (GitHub Actions for Node.js) | PENDING |
-| M10 | Polish: skills, AGENTS.md, README, npm publish setup | PENDING |
+| M1 | Scaffold: package.json, tsconfig, CLI skeleton, auth commands | COMPLETE |
+| M2 | Core infrastructure: client.ts, errors.ts, output.ts, coerce.ts, modes.ts | COMPLETE |
+| M3 | Schema module: SchemaCache, PropertyResolver | COMPLETE |
+| M4 | db read commands: schema, query, info, list-templates | COMPLETE |
+| M5 | db write commands: add, upsert, update-row, add-option, batch-add, create, delete, update-schema | COMPLETE |
+| M6 | page commands: create, get, get-property, set, append, delete, restore, move | COMPLETE |
+| M7 | block commands: list, get, append, update, delete | COMPLETE |
+| M8 | comment, search, user commands | COMPLETE |
+| M9 | Integration tests + CI/CD (GitHub Actions for Node.js) | COMPLETE |
+| M10 | Polish: skills, AGENTS.md, README, npm publish setup | COMPLETE |
 
 ## Testing
 
