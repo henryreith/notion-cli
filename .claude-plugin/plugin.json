@@ -1,0 +1,39 @@
+{
+  "name": "notion-agent",
+  "description": "Zero-overhead Notion API CLI for AI agents — db, page, block, comment, search, user commands. No MCP token overhead.",
+  "version": "0.1.0",
+  "author": "Henry Reith",
+  "homepage": "https://github.com/henryreith/notion-cli",
+  "skills": [
+    {
+      "name": "notion-shared",
+      "path": "../.claude/skills/notion-shared.md",
+      "description": "Prerequisites: auth, IDs, exit codes, --data flag, output modes"
+    },
+    {
+      "name": "notion-db",
+      "path": "../.claude/skills/notion-db.md",
+      "description": "Database commands: schema, query, add, upsert, batch-add, update-schema"
+    },
+    {
+      "name": "notion-page",
+      "path": "../.claude/skills/notion-page.md",
+      "description": "Page commands: create, get, set, append, get-markdown, set-markdown, delete, restore, move"
+    },
+    {
+      "name": "notion-search",
+      "path": "../.claude/skills/notion-search.md",
+      "description": "Search, block, comment, and user commands"
+    },
+    {
+      "name": "notion-knowledge-base",
+      "path": "../.claude/skills/notion-knowledge-base.md",
+      "description": "Pattern: maintaining a tagged knowledge base with dynamic option creation"
+    },
+    {
+      "name": "notion-task-tracker",
+      "path": "../.claude/skills/notion-task-tracker.md",
+      "description": "Pattern: task and project tracking database"
+    }
+  ]
+}

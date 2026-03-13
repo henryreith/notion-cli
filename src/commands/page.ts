@@ -178,6 +178,43 @@ export function registerPage(program: Command): void {
       printJSON({ status: 'restored', id: updated.id })
     })
 
+  // page get-markdown (v5 SDK exclusive — reads full page content as markdown)
+  page.command('get-markdown <page-id>')
+    .description('Retrieve a page\'s full content as markdown (v5 SDK)')
+    .action(async (pageId: string) => {
+      const client = createNotionClient()
+      const result = await client.pages.retrieveMarkdown({ page_id: normaliseId(pageId) }) as any
+      // Output raw markdown to stdout (not JSON-wrapped — useful for piping)
+      process.stdout.write((result.markdown ?? result) + '\n')
+    })
+
+  // page set-markdown (v5 SDK exclusive — replaces full page content with markdown)
+  page.command('set-markdown <page-id>')
+    .description('Replace page content with markdown (v5 SDK)')
+    .requiredOption('--data <input>', 'Markdown: inline string, @file, or -')
+    .action(async (pageId: string, opts: { data: string }) => {
+      const client = createNotionClient()
+      const id = normaliseId(pageId)
+
+      let markdown: string
+      if (opts.data.startsWith('@')) {
+        const { readFileSync } = await import('fs')
+        markdown = readFileSync(opts.data.slice(1), 'utf-8')
+      } else if (opts.data === '-') {
+        const { readFileSync } = await import('fs')
+        markdown = readFileSync('/dev/stdin', 'utf-8')
+      } else {
+        markdown = opts.data
+      }
+
+      const result = await client.pages.updateMarkdown({
+        page_id: id,
+        type: 'insert_content',
+        insert_content: { content: markdown },
+      }) as any
+      printJSON(result)
+    })
+
   // page move
   page.command('move <page-id> <new-parent-id>')
     .description('Move a page to a new parent')

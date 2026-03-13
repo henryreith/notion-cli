@@ -9,7 +9,8 @@ type: service
 ## Install
 
 ```bash
-pip install notion-agent-cli
+npm install -g notion-agent-cli
+notion auth setup   # interactive wizard (opens browser)
 ```
 
 ## Authentication
@@ -113,12 +114,23 @@ notion db add <db-id> "Status=InvalidOption" 2>err.json
 cat err.json  # {"error": "unknown option ...", "property": "Status"}
 ```
 
-```python
-import json, subprocess
+```javascript
+import { execSync } from 'child_process'
 
-result = subprocess.run(["notion", "db", "add", db_id, "--data", json.dumps(props)],
-                        capture_output=True, text=True)
-if result.returncode != 0:
-    err = json.loads(result.stderr)
-    print(f"Error: {err['error']}")
+try {
+  const out = execSync(`notion db add ${dbId} --data '${JSON.stringify(props)}'`,
+                       { encoding: 'utf8' })
+  const page = JSON.parse(out)
+} catch (err) {
+  const error = JSON.parse(err.stderr)
+  console.error(`Error: ${error.error}`)
+}
+```
+
+```bash
+# Shell pattern
+result=$(notion db add <db-id> --data "$props" 2>err.json)
+if [ $? -ne 0 ]; then
+  cat err.json  # {"error": "..."}
+fi
 ```

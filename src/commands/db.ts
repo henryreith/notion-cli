@@ -317,21 +317,43 @@ export function registerDb(program: Command): void {
   db.command('batch-add <db-id>')
     .description('Batch insert rows from a JSON array')
     .requiredOption('--data <input>', 'JSON array: @file or -')
+    .option('--add-options', 'Auto-create missing select/multi_select options before inserting')
     .option('--dry-run', 'Validate only, no writes')
     .option('--continue-on-error', 'Skip failed rows instead of stopping')
     .option('--no-cache', 'Skip schema cache')
     .action(async (dbId: string, opts: {
       data: string
+      addOptions?: boolean
       dryRun?: boolean
       continueOnError?: boolean
       cache: boolean
     }) => {
       const client = createNotionClient()
       const id = normaliseId(dbId)
-      const schema = await resolver.getSchema(id, client, { noCache: !opts.cache })
+      let schema = await resolver.getSchema(id, client, { noCache: !opts.cache })
 
       const rows = readDataInput(opts.data) as Record<string, string | string[]>[]
       if (!Array.isArray(rows)) die(ExitCode.VALIDATION, '--data must be a JSON array')
+
+      // If --add-options: collect all unique values for select/multi_select props across all rows
+      // and ensure they exist before starting inserts
+      if (opts.addOptions && !opts.dryRun) {
+        const allValues: Record<string, Set<string>> = {}
+        for (const row of rows) {
+          for (const [key, value] of Object.entries(row)) {
+            const prop = resolver.findProperty(schema, key)
+            if (!prop || (prop.type !== 'select' && prop.type !== 'multi_select')) continue
+            if (!allValues[prop.name]) allValues[prop.name] = new Set()
+            const vals = Array.isArray(value) ? value : String(value).split(',').map(s => s.trim())
+            for (const v of vals) allValues[prop.name]!.add(v)
+          }
+        }
+        for (const [propName, valueSet] of Object.entries(allValues)) {
+          await ensureOptions(client, id, schema, { [propName]: [...valueSet] })
+        }
+        // Refresh schema once after all option additions
+        schema = await resolver.getSchema(id, client, { refresh: true })
+      }
 
       // Validate all rows first
       const validated: Array<Record<string, unknown>> = []

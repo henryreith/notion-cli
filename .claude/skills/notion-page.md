@@ -92,27 +92,49 @@ Restore a trashed page:
 notion page restore <page-id>
 ```
 
+## New in v5 SDK: Markdown Read/Write
+
+```bash
+# Get full page content as markdown (great for agents reading knowledge base entries)
+notion page get-markdown <page-id>
+
+# Replace/insert page content with markdown
+notion page set-markdown <page-id> --data "## Updated Section\n\nNew content here."
+notion page set-markdown <page-id> --data @updated-doc.md
+cat generated.md | notion page set-markdown <page-id> --data -
+```
+
+`get-markdown` is much more useful than `block list` for agents — returns the whole page
+as readable markdown, no recursive block traversal needed.
+
+## page move
+
+```bash
+notion page move <page-id> <new-parent-page-id>
+```
+
 ## Common Patterns
 
 ### Read-modify-write
 
-```python
-import subprocess, json
-
+```bash
 # Get current state
-result = subprocess.run(
-    ["notion", "page", "get", page_id, "--output", "json"],
-    capture_output=True, text=True
-)
-page = json.loads(result.stdout)
-current_status = page["properties"]["Status"]["select"]["name"]
+page=$(notion page get <page-id> --output json)
+status=$(echo "$page" | jq -r '.properties.Status.select.name')
 
 # Conditionally update
-if current_status != "Done":
-    subprocess.run(
-        ["notion", "page", "set", page_id, "Status=Done"],
-        check=True
-    )
+if [ "$status" != "Done" ]; then
+  notion page set <page-id> "Status=Done"
+fi
+```
+
+### Read full content, summarise, write back
+
+```bash
+# Agent pattern: read → summarise → append summary
+content=$(notion page get-markdown <page-id>)
+summary=$(echo "$content" | your-summarise-cmd)
+notion page append <page-id> --data "## Summary\n\n$summary"
 ```
 
 ### Create page with rich content

@@ -142,11 +142,14 @@ Colors: `default`, `gray`, `brown`, `orange`, `yellow`, `green`, `blue`, `purple
 Add multiple rows from a JSON array. Use `--dry-run` to validate first:
 
 ```bash
-# Validate first
+# Validate first (no writes, exits 7)
 notion db batch-add <db-id> --data @batch.json --dry-run
 
 # Then execute
 notion db batch-add <db-id> --data @batch.json
+
+# Auto-create any missing select/multi_select options (great for knowledge base tagging)
+notion db batch-add <db-id> --data @batch.json --add-options
 
 # From stdin, continue despite per-row errors
 notion db batch-add <db-id> --data - --continue-on-error < batch.json
@@ -155,10 +158,14 @@ notion db batch-add <db-id> --data - --continue-on-error < batch.json
 `batch.json` format: array of property objects:
 ```json
 [
-  {"Name": "Row 1", "Status": "Active", "Tags": "python,cli"},
-  {"Name": "Row 2", "Status": "Done"}
+  {"Name": "Protocol: OAuth2", "Tags": "security,oauth,protocols", "Type": "Protocol"},
+  {"Name": "Tool: Notion CLI", "Tags": "tooling,automation", "Type": "Tool", "URL": "https://github.com/henryreith/notion-cli"}
 ]
 ```
+
+**`--add-options` for knowledge bases:** Before inserting, scans all rows to collect every unique
+tag/select value, creates any that are missing in one batch schema update, then inserts all rows.
+This is the recommended pattern for agents that invent new tags on the fly.
 
 ## db create
 
