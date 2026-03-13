@@ -4,13 +4,13 @@
   "description": "Zero-overhead CLI for the Notion API — for AI agents, scripts, and automation",
   "type": "module",
   "bin": {
-    "notion": "./dist/cli.js",
-    "notion-agent": "./dist/cli.js"
+    "notion": "dist/cli.js",
+    "notion-agent": "dist/cli.js"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && chmod +x dist/cli.js",
     "build:watch": "tsc --watch",
     "dev": "tsx src/cli.ts",
     "test": "vitest run",
@@ -29,7 +29,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/henryreith/notion-cli"
+    "url": "git+https://github.com/henryreith/notion-cli.git"
   },
   "engines": {
     "node": ">=18.0.0"

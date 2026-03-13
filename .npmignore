@@ -1,0 +1,17 @@
+# Source files (compiled dist/ is what gets published)
+src/
+tests/
+tsconfig.json
+vitest.config.ts
+dist/**/*.js.map
+dist/**/*.d.ts.map
+
+# Dev/CI files
+.github/
+.claude/
+.claude-plugin/
+
+# Misc
+progress.md
+*.tgz
+coverage/
