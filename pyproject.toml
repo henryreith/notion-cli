@@ -32,11 +32,12 @@ dependencies = [
 
 [project.scripts]
 notion = "notion.__main__:main"
+notion-agent = "notion.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/henryreith/notion-agent-cli"
-Repository = "https://github.com/henryreith/notion-agent-cli"
-Issues = "https://github.com/henryreith/notion-agent-cli/issues"
+Homepage = "https://github.com/henryreith/notion-cli"
+Repository = "https://github.com/henryreith/notion-cli"
+Issues = "https://github.com/henryreith/notion-cli/issues"
 
 [project.optional-dependencies]
 dev = [
