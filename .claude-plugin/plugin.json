@@ -1,7 +1,7 @@
 {
   "name": "notion-agent",
   "description": "Zero-overhead Notion API CLI for AI agents — db, page, block, comment, search, user commands. No MCP token overhead.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": "Henry Reith",
   "homepage": "https://github.com/henryreith/notion-cli",
   "skills": [
