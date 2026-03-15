@@ -1,7 +1,7 @@
 import { Command } from 'commander'
-import { createNotionClient, normaliseId } from '../client.js'
+import { createNotionClient, normaliseId, iteratePaginatedAPI } from '../client.js'
 import { die, ExitCode } from '../errors.js'
-import { printJSON, printId } from '../output.js'
+import { printJSON, printId, printIds } from '../output.js'
 import { parseKV, readDataInput, markdownToBlocks, looksLikeMarkdown } from '../coerce.js'
 import { PropertyResolver } from '../schema.js'
 import { confirm, getMode } from '../modes.js'
@@ -10,6 +10,28 @@ const resolver = new PropertyResolver()
 
 export function registerPage(program: Command): void {
   const page = program.command('page').description('Page commands')
+
+  // page list
+  page.command('list <parent-id>')
+    .description('List child pages under a page or block')
+    .option('--output <format>', 'Output format: json|ids', 'json')
+    .action(async (parentId: string, opts: { output: string }) => {
+      const client = createNotionClient()
+      const id = normaliseId(parentId)
+      const results: unknown[] = []
+
+      for await (const block of iteratePaginatedAPI(client.blocks.children.list, { block_id: id })) {
+        if ((block as any).type === 'child_page') {
+          results.push(block)
+        }
+      }
+
+      if (opts.output === 'ids') {
+        printIds(results as Array<{ id: string }>)
+      } else {
+        printJSON(results)
+      }
+    })
 
   // page create
   page.command('create <parent-id>')

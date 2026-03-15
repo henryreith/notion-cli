@@ -51,14 +51,27 @@ tests/
 
 ## Command Reference
 
+Global flags (apply before any subcommand):
 ```
-notion auth setup
+notion --profile <name> <command>    # use a named profile for this command
+notion --mode <auto|interactive|ci>  # operating mode override
+```
+
+```
+notion auth setup [--name <profile>]
 notion auth set-token <token>
 notion auth test
-notion auth status
+notion auth status [--output json|text]
+notion auth profile list [--output json|text]
+notion auth profile add <name> [--token TOKEN]
+notion auth profile remove <name>
+notion auth profile rename <old-name> <new-name>
+notion auth profile use <name>
+notion auth profile update <name>
 
+notion db list [--output json|ids] [--limit N] [--page-all]
 notion db schema <db-id> [--refresh] [--output json|properties|options] [--no-cache]
-notion db query <db-id> [--filter PROP:OP:VALUE]... [--sort PROP] [--limit N] [--page-all] [--output json|table|ids]
+notion db query <db-id> [--filter PROP:OP:VALUE]... [--filter-logic and|or] [--sort PROP] [--limit N] [--page-all] [--output json|table|ids]
 notion db info <db-id>
 notion db list-templates <db-id>
 notion db add <db-id> [KEY=VALUE]... [--data JSON|@file|-] [--add-options] [--output json|id]
@@ -70,6 +83,7 @@ notion db create <parent-id> <title> [--data schema-json]
 notion db delete <db-id> [--confirm]
 notion db update-schema <db-id> --data JSON|@file
 
+notion page list <parent-id> [--output json|ids]
 notion page create <parent-id> --title TITLE [--data JSON] [--output json|id]
 notion page get <page-id> [--output json|properties]
 notion page get-property <page-id> <property-name>
@@ -109,7 +123,10 @@ notion user me
 
 ### Token Priority
 1. `NOTION_API_KEY` environment variable
-2. Config file: `~/.config/notion-agent/config.json` (via `conf` package)
+2. `NOTION_PROFILE` environment variable → look up named profile
+3. `--profile <name>` CLI flag → look up named profile (sets `NOTION_PROFILE` env)
+4. `default_profile` from config file (`~/.config/notion-agent/config.json`)
+5. Legacy v1 format `{ token }` — auto-migrated to `profiles.default` on first read
 
 ### Cache
 - Location: `~/.cache/notion-agent/schemas/<db-id>.json`
@@ -151,6 +168,22 @@ Mode detection: `--mode` flag → `NOTION_MODE` env → TTY detection
 | M8 | comment, search, user commands | COMPLETE |
 | M9 | Integration tests + CI/CD (GitHub Actions for Node.js) | COMPLETE |
 | M10 | Polish: skills, AGENTS.md, README, npm publish setup | COMPLETE |
+
+## Skills and Plugin Manifest Sync
+
+Skills live in `.claude/skills/*.md`. The plugin manifest is at `.claude-plugin/plugin.json`.
+
+**Rule:** Every `.claude/skills/<name>.md` file must have a matching entry in `.claude-plugin/plugin.json`, and vice versa. Keep them in sync.
+
+When adding a skill:
+1. Create `.claude/skills/<name>.md`
+2. Add entry to `.claude-plugin/plugin.json` under `"skills"`:
+   ```json
+   { "name": "<name>", "path": "../.claude/skills/<name>.md", "description": "<one-liner>" }
+   ```
+3. Update the Command Reference in `CLAUDE.md` if new commands are introduced.
+
+When removing a skill: delete the `.md` file and remove the plugin.json entry.
 
 ## Testing
 

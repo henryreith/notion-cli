@@ -11,6 +11,37 @@ const resolver = new PropertyResolver()
 export function registerDb(program: Command): void {
   const db = program.command('db').description('Database commands')
 
+  // db list
+  db.command('list')
+    .description('List databases accessible to the integration')
+    .option('--output <format>', 'Output format: json|ids', 'json')
+    .option('--limit <N>', 'Maximum results', parseInt)
+    .option('--page-all', 'Fetch all pages')
+    .action(async (opts: { output: string; limit?: number; pageAll?: boolean }) => {
+      const client = createNotionClient()
+      const results: unknown[] = []
+      let cursor: string | undefined
+
+      do {
+        const res = await client.search({
+          filter: { value: 'database', property: 'object' } as any,
+          ...(cursor ? { start_cursor: cursor } : {}),
+          ...(opts.limit && !opts.pageAll ? { page_size: Math.min(opts.limit, 100) } : {}),
+        })
+        results.push(...res.results)
+        cursor = res.has_more ? res.next_cursor ?? undefined : undefined
+        if (!opts.pageAll && opts.limit && results.length >= opts.limit) break
+        if (!opts.pageAll && !opts.limit) break
+      } while (cursor)
+
+      const limited = opts.limit ? results.slice(0, opts.limit) : results
+      if (opts.output === 'ids') {
+        printIds(limited as Array<{ id: string }>)
+      } else {
+        printJSON(limited)
+      }
+    })
+
   // db schema
   db.command('schema <db-id>')
     .description('Fetch data source schema')
@@ -48,12 +79,14 @@ export function registerDb(program: Command): void {
   db.command('query <db-id>')
     .description('Query a data source')
     .option('--filter <PROP:OP:VALUE>', 'Filter condition (repeatable)', collect, [])
+    .option('--filter-logic <logic>', 'Combine filters with "and" or "or" (default: and)', 'and')
     .option('--sort <PROP>', 'Sort by property (prefix - for descending)')
     .option('--limit <N>', 'Maximum results', parseInt)
     .option('--page-all', 'Fetch all pages')
     .option('--output <format>', 'Output format: json|table|ids', 'json')
     .action(async (dbId: string, opts: {
       filter: string[]
+      filterLogic: string
       sort?: string
       limit?: number
       pageAll?: boolean
@@ -76,7 +109,8 @@ export function registerDb(program: Command): void {
           const propType = propSchema?.type ?? 'rich_text'
           return buildTypedFilter(prop, op, value, propType)
         })
-        filterObj = conditions.length === 1 ? conditions[0] : { and: conditions }
+        const combinator = opts.filterLogic === 'or' ? 'or' : 'and'
+        filterObj = conditions.length === 1 ? conditions[0] : { [combinator]: conditions }
       }
 
       // Build sorts
