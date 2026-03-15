@@ -6,6 +6,8 @@ coverage/
 .DS_Store
 *.tsbuildinfo
 RELEASE.md
+blog-site.md
+blog-medium.md
 .pytest_cache/
 __pycache__/
 *.pyc
