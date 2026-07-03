@@ -1,23 +1,21 @@
 name: Release
 
+# Bumps the patch version on every push to main, then pushes the bump
+# commit + tag. Publishing happens in publish.yml (npm Trusted Publishing),
+# which chains off this workflow via workflow_run.
 on:
   push:
     branches: [main]
 
 jobs:
   release:
-    name: Bump version and publish to npm
+    name: Bump version and tag
     runs-on: ubuntu-latest
-    # Skip if this commit was already created by the version bump (message is "vX.Y.Z")
+    # Skip commits created by the version bump itself (message is "vX.Y.Z")
     if: "!startsWith(github.event.head_commit.message, 'v')"
-
-    environment:
-      name: npm
-      url: https://www.npmjs.com/package/notion-agent-cli
 
     permissions:
       contents: write
-      id-token: write
 
     steps:
       - uses: actions/checkout@v4
@@ -27,8 +25,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          registry-url: "https://registry.npmjs.org"
+          node-version: "24"
           cache: npm
 
       - name: Install dependencies
@@ -46,14 +43,11 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Bump patch version
-        # Updates package.json, runs scripts/sync-version.js (patches src/cli.ts +
-        # .claude-plugin/plugin.json and stages them), then creates a git commit + tag.
-        run: npm version patch
+        # Updates package.json, runs scripts/sync-version.js (patches src/cli.ts,
+        # src/index.ts + .claude-plugin/plugin.json and stages them), then creates
+        # a "vX.Y.Z" commit + tag. The v-prefixed message keeps the skip-guard
+        # above from re-triggering on the bump commit.
+        run: npm version patch -m "v%s"
 
       - name: Push commit and tag
         run: git push origin main --follow-tags
-
-      - name: Publish to npm
-        run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
