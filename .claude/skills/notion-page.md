@@ -76,12 +76,12 @@ to-do items (`- [ ]`/`- [x]`), code blocks (fenced), bold, italic, inline code.
 Moves to trash (recoverable with `page restore`):
 
 ```bash
-notion page delete <page-id> --confirm     # interactive confirmation
-notion page delete <page-id> --mode ci     # agent/script (no prompt)
+notion page delete <page-id> --confirm     # required in non-interactive mode
+                                           # (without it: exit 3, nothing deleted)
 
 # Bulk delete via query pipeline
 notion db query <db-id> --filter "Status:=:Archived" --output ids \
-  | xargs -I{} notion page delete {} --mode ci
+  | xargs -I{} notion page delete {} --confirm
 ```
 
 ## page restore

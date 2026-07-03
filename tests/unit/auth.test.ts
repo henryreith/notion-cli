@@ -42,6 +42,25 @@ describe('normaliseId', () => {
     const id = 'abcdef1234567890abcdef1234567890'
     expect(normaliseId(id)).toBe(id)
   })
+
+  it('extracts ID from a slugged Notion URL with query params', async () => {
+    const { normaliseId } = await import('../../src/client.js')
+    const url = 'https://www.notion.so/henryreith/My-Page-abcdef1234567890abcdef1234567890?pvs=4'
+    expect(normaliseId(url)).toBe('abcdef1234567890abcdef1234567890')
+  })
+
+  it('extracts hyphenated UUID from a Notion URL', async () => {
+    const { normaliseId } = await import('../../src/client.js')
+    const url = 'https://www.notion.so/henryreith/abcdef12-3456-7890-abcd-ef1234567890?v=xyz'
+    expect(normaliseId(url)).toBe('abcdef1234567890abcdef1234567890')
+  })
+
+  it('rejects input that is not an ID or Notion URL', async () => {
+    const { normaliseId, } = await import('../../src/client.js')
+    const { ValidationError } = await import('../../src/errors.js')
+    expect(() => normaliseId('garbage')).toThrow(ValidationError)
+    expect(() => normaliseId('https://www.notion.so/henryreith/just-a-slug')).toThrow(ValidationError)
+  })
 })
 
 describe('profile API exports', () => {

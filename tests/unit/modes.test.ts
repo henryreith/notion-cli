@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { getMode } from '../../src/modes.js'
+import { getMode, confirmDestructive } from '../../src/modes.js'
 
 describe('getMode', () => {
   const originalEnv = process.env['NOTION_MODE']
@@ -38,5 +38,44 @@ describe('getMode', () => {
     delete process.env['NOTION_MODE']
     Object.defineProperty(process.stdout, 'isTTY', { value: true, writable: true })
     expect(getMode()).toBe('interactive')
+  })
+})
+
+describe('confirmDestructive', () => {
+  const originalMode = process.env['NOTION_MODE']
+  const originalAutoConfirm = process.env['NOTION_AUTO_CONFIRM']
+
+  afterEach(() => {
+    if (originalMode === undefined) delete process.env['NOTION_MODE']
+    else process.env['NOTION_MODE'] = originalMode
+    if (originalAutoConfirm === undefined) delete process.env['NOTION_AUTO_CONFIRM']
+    else process.env['NOTION_AUTO_CONFIRM'] = originalAutoConfirm
+    vi.restoreAllMocks()
+  })
+
+  it('proceeds when --confirm was passed, regardless of mode', async () => {
+    process.env['NOTION_MODE'] = 'ci'
+    await expect(confirmDestructive('Delete?', true)).resolves.toBe(true)
+  })
+
+  it('proceeds when NOTION_AUTO_CONFIRM=1 in non-interactive mode', async () => {
+    process.env['NOTION_MODE'] = 'ci'
+    process.env['NOTION_AUTO_CONFIRM'] = '1'
+    await expect(confirmDestructive('Delete?', false)).resolves.toBe(true)
+  })
+
+  it('refuses with exit 3 in non-interactive mode without --confirm', async () => {
+    process.env['NOTION_MODE'] = 'ci'
+    delete process.env['NOTION_AUTO_CONFIRM']
+    const stderrSpy = vi.spyOn(process.stderr, 'write').mockReturnValue(true)
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation((() => {
+      throw new Error('process.exit called')
+    }) as never)
+
+    await expect(confirmDestructive('Delete?', false)).rejects.toThrow('process.exit called')
+    expect(exitSpy).toHaveBeenCalledWith(3)
+    const errorOutput = String(stderrSpy.mock.calls[0]?.[0])
+    expect(errorOutput).toContain('--confirm')
+    expect(errorOutput).toContain('NOTION_AUTO_CONFIRM')
   })
 })

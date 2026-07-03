@@ -34,7 +34,14 @@ patch(
   `"version": "${version}"`,
 )
 
+// src/index.ts — export const version = 'x.y.z'
+patch(
+  'src/index.ts',
+  /export const version = '[^']+'/,
+  `export const version = '${version}'`,
+)
+
 // Stage the patched files so npm version includes them in its commit
-execSync('git add src/cli.ts .claude-plugin/plugin.json')
+execSync('git add src/cli.ts src/index.ts .claude-plugin/plugin.json')
 
 process.stdout.write(`sync-version: synced all files to v${version}\n`)

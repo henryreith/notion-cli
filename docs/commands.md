@@ -180,7 +180,7 @@ Archive (soft-delete) a database.
 
 | Flag | Description |
 |------|-------------|
-| `--confirm` | Skip confirmation prompt |
+| `--confirm` | Confirm the action (skips prompt; required in non-interactive mode) |
 
 ```bash
 notion db delete abc123... --confirm
@@ -264,7 +264,7 @@ Archive a page.
 
 | Flag | Description |
 |------|-------------|
-| `--confirm` | Skip confirmation prompt |
+| `--confirm` | Confirm the action (skips prompt; required in non-interactive mode) |
 
 ```bash
 notion page delete page123... --confirm
@@ -336,10 +336,10 @@ notion block update block123... --data @block.json
 
 ### `notion block delete <block-id>`
 
-Delete (archive) a block.
+Delete (archive) a block. Prompts in interactive mode; pass `--confirm` to skip.
 
 ```bash
-notion block delete block123...
+notion block delete block123... --confirm
 ```
 
 ---

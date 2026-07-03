@@ -89,7 +89,7 @@ notion db add <db-id> "Name=My Page" "Status=Active" "Tags=python,cli"
 ```bash
 # Pipeline: get IDs → delete
 notion db query <db-id> --filter "Status:=:Archived" --output ids \
-  | xargs -I{} notion page delete {} --mode ci
+  | xargs -I{} notion page delete {} --confirm
 
 # Get schema as JSON
 notion db schema <db-id> --output json | jq '.properties | keys'
@@ -97,13 +97,20 @@ notion db schema <db-id> --output json | jq '.properties | keys'
 
 ## Agent Mode (suppress prompts)
 
-```bash
-# Via flag
-notion page delete <page-id> --mode ci
-notion db delete <db-id> --mode ci --confirm
+Non-interactive mode never prompts, but destructive commands (`page delete`,
+`db delete`, `block delete`) **refuse with exit 3 unless `--confirm` is passed**.
+Always pass `--confirm` when deleting from a script or agent.
 
-# Via env (sets for all commands)
+```bash
+# Deletes: --confirm is required in non-interactive mode
+notion page delete <page-id> --confirm
+notion db delete <db-id> --confirm
+
+# Via env (sets mode for all commands)
 export NOTION_MODE=ci
+
+# Trusted bulk pipelines can skip --confirm globally
+export NOTION_AUTO_CONFIRM=1
 ```
 
 ## Error Parsing

@@ -140,7 +140,7 @@ notion block list <block-id> [--output json|ids]
 notion block get <block-id>
 notion block append <block-id> --type TYPE --text TEXT
 notion block update <block-id> --data JSON|@file
-notion block delete <block-id>
+notion block delete <block-id> [--confirm]
 
 notion comment add <page-id> <text>
 notion comment list <page-id> [--output json|ids]
@@ -169,6 +169,11 @@ notion db add <db-id> Name="Task" Status="Active" --output id
 notion db query <db-id> --filter "Status:=:Done" --output ids \
   | xargs -I{} notion page delete {} --confirm
 ```
+
+**Delete safety:** in non-interactive mode, `page delete`, `db delete`, and
+`block delete` refuse with exit 3 unless `--confirm` is passed — so a script or
+agent can never delete by accident. Set `NOTION_AUTO_CONFIRM=1` to skip the gate
+in trusted pipelines.
 
 **Exit codes** — machine-readable, always:
 

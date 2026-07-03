@@ -78,7 +78,7 @@ notion db add <db-id> [KEY=VALUE]... [--data JSON|@file|-] [--add-options] [--ou
 notion db upsert <db-id> --match PROP:VALUE [KEY=VALUE]... [--data JSON] [--add-options]
 notion db update-row <page-id> [KEY=VALUE]... [--data JSON]
 notion db add-option <db-id> <property> --option NAME [--option NAME2] [--color COLOR]
-notion db batch-add <db-id> --data @file|- [--dry-run] [--continue-on-error]
+notion db batch-add <db-id> --data @file|- [--add-options] [--dry-run] [--continue-on-error]
 notion db create <parent-id> <title> [--data schema-json]
 notion db delete <db-id> [--confirm]
 notion db update-schema <db-id> --data JSON|@file
@@ -89,6 +89,8 @@ notion page get <page-id> [--output json|properties]
 notion page get-property <page-id> <property-name>
 notion page set <page-id> [KEY=VALUE]... [--data JSON]
 notion page append <page-id> --data MARKDOWN|JSON|@file|-
+notion page get-markdown <page-id>
+notion page set-markdown <page-id> --data MARKDOWN|@file|-
 notion page delete <page-id> [--confirm]
 notion page restore <page-id>
 notion page move <page-id> <new-parent-id>
@@ -97,7 +99,7 @@ notion block list <block-id> [--output json|ids]
 notion block get <block-id>
 notion block append <block-id> --type TYPE --text TEXT
 notion block update <block-id> --data JSON|@file
-notion block delete <block-id>
+notion block delete <block-id> [--confirm]
 
 notion comment add <page-id> <text>
 notion comment list <page-id> [--output json|ids]
@@ -141,8 +143,8 @@ All errors printed as JSON to **stderr**:
 
 ## Operating Modes
 
-- `auto` (default when non-TTY): never prompts
-- `interactive` (default when TTY): prompts for destructive operations
+- `auto` (default when non-TTY): never prompts; destructive commands (`page delete`, `db delete`, `block delete`) refuse with exit 3 unless `--confirm` is passed or `NOTION_AUTO_CONFIRM=1` is set
+- `interactive` (default when TTY): prompts y/N for destructive operations (`--confirm` skips the prompt)
 - `ci`: alias for auto
 
 Mode detection: `--mode` flag → `NOTION_MODE` env → TTY detection

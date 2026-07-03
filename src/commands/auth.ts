@@ -16,22 +16,66 @@ import { createNotionClient } from '../client.js'
 import { die, ExitCode } from '../errors.js'
 import { printJSON } from '../output.js'
 
+const TOKEN_PROMPT = 'Paste your integration token (ntn_... or secret_...): '
+
+// Masked prompt: the token never echoes to the terminal. Falls back to plain
+// readline when stdin is not a TTY (piped input).
 async function promptToken(): Promise<string> {
-  const rl = createInterface({ input: process.stdin, output: process.stdout })
-  return new Promise<string>(resolve => {
-    rl.question('Paste your integration token (secret_...): ', answer => {
-      rl.close()
-      resolve(answer.trim())
+  if (!process.stdin.isTTY) {
+    const rl = createInterface({ input: process.stdin, output: process.stdout })
+    return new Promise<string>(resolve => {
+      rl.question(TOKEN_PROMPT, answer => {
+        rl.close()
+        resolve(answer.trim())
+      })
     })
+  }
+
+  process.stdout.write(TOKEN_PROMPT)
+  return new Promise<string>(resolve => {
+    const stdin = process.stdin
+    stdin.setRawMode(true)
+    stdin.resume()
+    stdin.setEncoding('utf-8')
+    let token = ''
+    const onData = (chunk: string) => {
+      for (const ch of chunk) {
+        if (ch === '\r' || ch === '\n' || ch === '\u0004') {
+          stdin.setRawMode(false)
+          stdin.pause()
+          stdin.removeListener('data', onData)
+          process.stdout.write('\n')
+          resolve(token.trim())
+          return
+        }
+        if (ch === '\u0003') { // Ctrl-C
+          stdin.setRawMode(false)
+          process.stdout.write('\n')
+          process.exit(130)
+        }
+        if (ch === '\u007f' || ch === '\b') {
+          token = token.slice(0, -1)
+        } else {
+          token += ch
+        }
+      }
+    }
+    stdin.on('data', onData)
   })
 }
 
 async function verifyToken(token: string): Promise<{ name: string; workspace: string }> {
+  const previous = process.env['NOTION_API_KEY']
   process.env['NOTION_API_KEY'] = token
-  const client = createNotionClient()
-  const me = await client.users.me({}) as any
-  const workspace = me.bot?.workspace_name ?? 'unknown'
-  return { name: me.name ?? me.id, workspace }
+  try {
+    const client = createNotionClient()
+    const me = await client.users.me({}) as any
+    const workspace = me.bot?.workspace_name ?? 'unknown'
+    return { name: me.name ?? me.id, workspace }
+  } finally {
+    if (previous === undefined) delete process.env['NOTION_API_KEY']
+    else process.env['NOTION_API_KEY'] = previous
+  }
 }
 
 export function registerAuth(program: Command): void {
@@ -56,7 +100,7 @@ export function registerAuth(program: Command): void {
       }
 
       console.log('Step 2: Click "+ New integration", give it a name, select a workspace.\n')
-      console.log('Step 3: Copy the "Internal Integration Secret" (starts with secret_...)\n')
+      console.log('Step 3: Copy the "Internal Integration Secret" (starts with ntn_ or secret_)\n')
       console.log('Step 4: Paste your integration token here:')
 
       const token = await promptToken()
@@ -120,7 +164,7 @@ export function registerAuth(program: Command): void {
         die(ExitCode.AUTH, 'No token configured. Run: notion auth setup')
       }
 
-      const prefix = token.slice(0, 12) + '...'
+      const prefix = token.slice(0, 8) + '...'
       const activeProfile = getActiveProfileName()
       const source = process.env['NOTION_API_KEY']
         ? 'env:NOTION_API_KEY'
@@ -202,9 +246,6 @@ export function registerAuth(program: Command): void {
         die(ExitCode.AUTH, 'Token verification failed. Check the token and try again.')
       }
 
-      // Restore NOTION_API_KEY after verification (we set it in verifyToken)
-      delete process.env['NOTION_API_KEY']
-
       addProfile(name, {
         token,
         workspace: me!.workspace,
@@ -258,16 +299,13 @@ export function registerAuth(program: Command): void {
       const found = profiles.find(p => p.name === name)
       if (!found) die(ExitCode.NOT_FOUND, `Profile not found: ${name}`)
 
-      process.env['NOTION_API_KEY'] = found.profile.token
-      const client = createNotionClient()
+      let me: { name: string; workspace: string }
       try {
-        const me = await client.users.me({}) as any
-        const workspace = me.bot?.workspace_name ?? 'unknown'
-        delete process.env['NOTION_API_KEY']
-        updateProfile(name, { workspace, user: me.name ?? me.id })
-        console.log(`Profile "${name}" updated: ${me.name ?? me.id} @ ${workspace}`)
+        me = await verifyToken(found!.profile.token)
       } catch {
         die(ExitCode.AUTH, `Token for profile "${name}" is invalid`)
       }
+      updateProfile(name, { workspace: me!.workspace, user: me!.name })
+      console.log(`Profile "${name}" updated: ${me!.name} @ ${me!.workspace}`)
     })
 }

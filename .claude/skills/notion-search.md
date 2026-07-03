@@ -67,7 +67,7 @@ notion block update <block-id> --data @block-update.json
 ## block delete
 
 ```bash
-notion block delete <block-id>
+notion block delete <block-id> [--confirm]
 ```
 
 ## comment add / list

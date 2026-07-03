@@ -1,6 +1,6 @@
 import { homedir } from 'os'
 import { join } from 'path'
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs'
+import { readFileSync, writeFileSync, mkdirSync, existsSync, chmodSync } from 'fs'
 
 const CONFIG_DIR = join(homedir(), '.config', 'notion-agent')
 const CONFIG_FILE = join(CONFIG_DIR, 'config.json')
@@ -54,8 +54,14 @@ function readConfig(): ConfigV2 {
 }
 
 function writeConfig(config: ConfigV2): void {
-  mkdirSync(CONFIG_DIR, { recursive: true })
-  writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2), 'utf-8')
+  mkdirSync(CONFIG_DIR, { recursive: true, mode: 0o700 })
+  writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2), { encoding: 'utf-8', mode: 0o600 })
+  try {
+    // mode on writeFileSync only applies at creation; tighten pre-existing files too
+    chmodSync(CONFIG_FILE, 0o600)
+  } catch {
+    // best-effort (e.g. Windows)
+  }
 }
 
 export function getToken(profileName?: string): string | undefined {

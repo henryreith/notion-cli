@@ -7,11 +7,20 @@ Cookbook for AI agents and automation scripts using `notion-agent-cli`.
 Always set these environment variables to ensure non-interactive operation:
 
 ```bash
-export NOTION_API_KEY=secret_xxxx...
-export NOTION_MODE=auto   # never prompts for confirmation
+export NOTION_API_KEY=ntn_xxxx...
+export NOTION_MODE=auto   # never prompts
 ```
 
 Or use `--mode auto` per command.
+
+**Deletes are gated:** in non-interactive mode, `page delete`, `db delete`, and
+`block delete` refuse with exit 3 unless you pass `--confirm`. This prevents
+accidental deletion; the error message tells you exactly what to do. For trusted
+bulk pipelines, `export NOTION_AUTO_CONFIRM=1` skips the gate globally.
+
+```bash
+notion page delete <page-id> --confirm   # required from scripts/agents
+```
 
 ## Subprocess Pattern
 

@@ -2,9 +2,9 @@ import { Command } from 'commander'
 import { createNotionClient, normaliseId, iteratePaginatedAPI } from '../client.js'
 import { die, ExitCode } from '../errors.js'
 import { printJSON, printId, printIds } from '../output.js'
-import { parseKV, readDataInput, markdownToBlocks, looksLikeMarkdown } from '../coerce.js'
+import { parseKV, readDataInput, readRawInput, markdownToBlocks, looksLikeMarkdown } from '../coerce.js'
 import { PropertyResolver } from '../schema.js'
-import { confirm, getMode } from '../modes.js'
+import { confirmDestructive } from '../modes.js'
 
 const resolver = new PropertyResolver()
 
@@ -142,17 +142,7 @@ export function registerPage(program: Command): void {
       const id = normaliseId(pageId)
 
       let blocks: unknown[]
-      let rawInput: string
-
-      if (opts.data.startsWith('@')) {
-        const { readFileSync } = await import('fs')
-        rawInput = readFileSync(opts.data.slice(1), 'utf-8')
-      } else if (opts.data === '-') {
-        const { readFileSync } = await import('fs')
-        rawInput = readFileSync('/dev/stdin', 'utf-8')
-      } else {
-        rawInput = opts.data
-      }
+      const rawInput = readRawInput(opts.data)
 
       if (looksLikeMarkdown(rawInput)) {
         blocks = markdownToBlocks(rawInput)
@@ -175,10 +165,9 @@ export function registerPage(program: Command): void {
   // page delete
   page.command('delete <page-id>')
     .description('Archive (delete) a page')
-    .option('--confirm', 'Skip confirmation prompt')
+    .option('--confirm', 'Confirm the action (skips prompt; required in non-interactive mode)')
     .action(async (pageId: string, opts: { confirm?: boolean }) => {
-      const mode = opts.confirm ? 'auto' : getMode()
-      const ok = await confirm(`Archive page ${pageId}?`, mode)
+      const ok = await confirmDestructive(`Archive page ${pageId}?`, Boolean(opts.confirm))
       if (!ok) { console.log('Cancelled.'); return }
       const client = createNotionClient()
       const updated = await client.pages.update({
@@ -218,16 +207,7 @@ export function registerPage(program: Command): void {
       const client = createNotionClient()
       const id = normaliseId(pageId)
 
-      let markdown: string
-      if (opts.data.startsWith('@')) {
-        const { readFileSync } = await import('fs')
-        markdown = readFileSync(opts.data.slice(1), 'utf-8')
-      } else if (opts.data === '-') {
-        const { readFileSync } = await import('fs')
-        markdown = readFileSync('/dev/stdin', 'utf-8')
-      } else {
-        markdown = opts.data
-      }
+      const markdown = readRawInput(opts.data)
 
       const result = await client.pages.updateMarkdown({
         page_id: id,

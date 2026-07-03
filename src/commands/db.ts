@@ -4,7 +4,7 @@ import { die, ExitCode } from '../errors.js'
 import { printJSON, printIds, printTable, printId } from '../output.js'
 import { parseKV, readDataInput, buildTypedFilter } from '../coerce.js'
 import { PropertyResolver, schemaCache, rawToSchema } from '../schema.js'
-import { confirm, getMode } from '../modes.js'
+import { confirmDestructive } from '../modes.js'
 
 const resolver = new PropertyResolver()
 
@@ -464,10 +464,9 @@ export function registerDb(program: Command): void {
   // db delete
   db.command('delete <db-id>')
     .description('Archive a data source')
-    .option('--confirm', 'Skip confirmation prompt')
+    .option('--confirm', 'Confirm the action (skips prompt; required in non-interactive mode)')
     .action(async (dbId: string, opts: { confirm?: boolean }) => {
-      const mode = opts.confirm ? 'auto' : getMode()
-      const ok = await confirm(`Archive database ${dbId}?`, mode)
+      const ok = await confirmDestructive(`Archive database ${dbId}?`, Boolean(opts.confirm))
       if (!ok) {
         console.log('Cancelled.')
         return

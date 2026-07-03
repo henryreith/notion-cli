@@ -1,4 +1,5 @@
 import { readFileSync } from 'fs'
+import { ValidationError } from './errors.js'
 
 export function parseKV(args: string[]): Record<string, string> {
   const result: Record<string, string> = {}
@@ -10,15 +11,34 @@ export function parseKV(args: string[]): Record<string, string> {
   return result
 }
 
-export function readDataInput(data: string): unknown {
+// Resolve the raw string behind a --data argument: inline value, @file, or - (stdin)
+export function readRawInput(data: string): string {
   if (data.startsWith('@')) {
-    return JSON.parse(readFileSync(data.slice(1), 'utf-8'))
+    const path = data.slice(1)
+    try {
+      return readFileSync(path, 'utf-8')
+    } catch (err) {
+      throw new ValidationError(`Cannot read file "${path}": ${(err as NodeJS.ErrnoException).code ?? (err as Error).message}`)
+    }
   }
   if (data === '-') {
-    const buf = readFileSync('/dev/stdin', 'utf-8')
-    return JSON.parse(buf)
+    try {
+      // fd 0 works on all platforms, unlike /dev/stdin
+      return readFileSync(0, 'utf-8')
+    } catch (err) {
+      throw new ValidationError(`Cannot read from stdin: ${(err as Error).message}`)
+    }
   }
-  return JSON.parse(data)
+  return data
+}
+
+export function readDataInput(data: string): unknown {
+  const raw = readRawInput(data)
+  try {
+    return JSON.parse(raw)
+  } catch (err) {
+    throw new ValidationError(`Invalid JSON in --data: ${(err as Error).message}`)
+  }
 }
 
 export function buildFilter(filterArgs: string[]): Record<string, unknown> | undefined {
@@ -95,12 +115,12 @@ function buildCondition(op: string, value: string, propType: string): Record<str
   }
   if (propType === 'number') {
     switch (op) {
-      case '=': case 'equals': return { equals: Number(value) }
-      case '!=': case 'does_not_equal': return { does_not_equal: Number(value) }
-      case '>': case 'greater_than': return { greater_than: Number(value) }
-      case '<': case 'less_than': return { less_than: Number(value) }
-      case '>=': case 'greater_than_or_equal_to': return { greater_than_or_equal_to: Number(value) }
-      case '<=': case 'less_than_or_equal_to': return { less_than_or_equal_to: Number(value) }
+      case '=': case 'equals': return { equals: toNumber(value) }
+      case '!=': case 'does_not_equal': return { does_not_equal: toNumber(value) }
+      case '>': case 'greater_than': return { greater_than: toNumber(value) }
+      case '<': case 'less_than': return { less_than: toNumber(value) }
+      case '>=': case 'greater_than_or_equal_to': return { greater_than_or_equal_to: toNumber(value) }
+      case '<=': case 'less_than_or_equal_to': return { less_than_or_equal_to: toNumber(value) }
     }
   }
   switch (op) {
@@ -131,7 +151,7 @@ export function coerceValue(value: string | string[], propType: string): unknown
       return { multi_select: items.map(name => ({ name })) }
     }
     case 'number':
-      return { number: Number(value) }
+      return { number: toNumber(value) }
     case 'checkbox':
       return { checkbox: value === 'true' }
     case 'date':
@@ -153,6 +173,14 @@ export function coerceValue(value: string | string[], propType: string): unknown
     default:
       return { rich_text: [{ type: 'text', text: { content: String(value) } }] }
   }
+}
+
+function toNumber(value: string | string[]): number {
+  const n = Number(value)
+  if (Number.isNaN(n)) {
+    throw new ValidationError(`Invalid number value: "${String(value)}"`)
+  }
+  return n
 }
 
 export function markdownToBlocks(md: string): unknown[] {

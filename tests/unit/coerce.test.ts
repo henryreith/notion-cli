@@ -1,5 +1,19 @@
 import { describe, it, expect } from 'vitest'
-import { parseKV, coerceValue, markdownToBlocks, looksLikeMarkdown, buildTypedFilter } from '../../src/coerce.js'
+import { parseKV, coerceValue, markdownToBlocks, looksLikeMarkdown, buildTypedFilter, readDataInput } from '../../src/coerce.js'
+
+describe('readDataInput', () => {
+  it('parses inline JSON', () => {
+    expect(readDataInput('{"a": 1}')).toEqual({ a: 1 })
+  })
+
+  it('throws ValidationError on invalid JSON', () => {
+    expect(() => readDataInput('{not json')).toThrow('Invalid JSON in --data')
+  })
+
+  it('throws ValidationError on missing file', () => {
+    expect(() => readDataInput('@/nonexistent/path.json')).toThrow('Cannot read file')
+  })
+})
 
 describe('parseKV', () => {
   it('parses key=value pairs', () => {
@@ -46,6 +60,10 @@ describe('coerceValue', () => {
 
   it('coerces number', () => {
     expect(coerceValue('42', 'number')).toEqual({ number: 42 })
+  })
+
+  it('rejects non-numeric number values', () => {
+    expect(() => coerceValue('abc', 'number')).toThrow('Invalid number value')
   })
 
   it('coerces checkbox true', () => {

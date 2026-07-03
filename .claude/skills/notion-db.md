@@ -179,8 +179,8 @@ notion db create <parent-page-id> "My Database" --data @schema.json
 ## db delete
 
 ```bash
-notion db delete <db-id> --confirm       # interactive
-notion db delete <db-id> --mode ci       # agent/script (no prompt)
+notion db delete <db-id> --confirm       # required in non-interactive mode
+                                         # (without it: exit 3, nothing deleted)
 ```
 
 ## db update-schema

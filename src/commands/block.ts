@@ -2,6 +2,7 @@ import { Command } from 'commander'
 import { createNotionClient, normaliseId, collectPaginatedAPI } from '../client.js'
 import { printJSON, printIds } from '../output.js'
 import { readDataInput } from '../coerce.js'
+import { confirmDestructive } from '../modes.js'
 
 export function registerBlock(program: Command): void {
   const block = program.command('block').description('Block commands')
@@ -69,7 +70,10 @@ export function registerBlock(program: Command): void {
   // block delete
   block.command('delete <block-id>')
     .description('Delete a block')
-    .action(async (blockId: string) => {
+    .option('--confirm', 'Confirm the action (skips prompt; required in non-interactive mode)')
+    .action(async (blockId: string, opts: { confirm?: boolean }) => {
+      const ok = await confirmDestructive(`Delete block ${blockId}?`, Boolean(opts.confirm))
+      if (!ok) { console.log('Cancelled.'); return }
       const client = createNotionClient()
       const result = await client.blocks.delete({ block_id: normaliseId(blockId) })
       printJSON({ status: 'deleted', id: (result as any).id })
