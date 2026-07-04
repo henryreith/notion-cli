@@ -1,4 +1,4 @@
-export const version = '0.2.2'
+export const version = '0.2.3'
 export { createNotionClient, normaliseId } from './client.js'
 export { getToken, setToken } from './config.js'
 export { die, ExitCode } from './errors.js'
