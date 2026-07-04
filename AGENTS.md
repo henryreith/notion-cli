@@ -36,7 +36,7 @@ npm test             # run unit tests (vitest)
 - `src/coerce.ts` — `coerceValue()`, `parseKV()`, `markdownToBlocks()`, `buildTypedFilter()`
 - `src/schema.ts` — `SchemaCache` (15-min TTL disk cache) + `PropertyResolver`
 - `src/output.ts` — `printJSON()`, `printTable()`, `printIds()`, `printId()`
-- `src/modes.ts` — `getMode()`, `confirm()` — auto/interactive/ci
+- `src/modes.ts` — `getMode()`, `confirmDestructive()` — auto/interactive/ci + delete gate
 - `src/config.ts` — `getToken()`, `setToken()` — env var + config file
 - `src/commands/` — one file per command group
 
@@ -50,6 +50,7 @@ npm test             # run unit tests (vitest)
 4. **Token**: env `NOTION_API_KEY` takes priority over config file
 5. **IDs**: always call `normaliseId()` before passing to SDK
 6. **Errors to stderr as JSON**: `{"error": "message"}`
+7. **Destructive commands gate through `confirmDestructive()`** — non-interactive mode refuses without `--confirm` (or `NOTION_AUTO_CONFIRM=1`), exit 3
 
 ---
 
@@ -81,13 +82,22 @@ for (let i = 0; i < rows.length; i++) {
 ## Token / Auth
 
 ```bash
-export NOTION_API_KEY=secret_xxxx   # highest priority
+export NOTION_API_KEY=ntn_xxxx   # highest priority
 notion auth setup                   # interactive wizard
-notion auth set-token secret_xxxx   # programmatic
+notion auth set-token ntn_xxxx   # programmatic
 ```
 
-Config file: `~/.config/notion-agent/config.json`
+Config file: `~/.config/notion-agent/config.json` (written `0600`)
 Schema cache: `~/.cache/notion-agent/schemas/<db-id>.json`
+
+---
+
+## Agent Skills
+
+Ready-made usage skills live in `skills/<name>/SKILL.md`, following the
+[Agent Skills](https://agentskills.io) open standard — portable to Claude Code,
+and any other agent that reads SKILL.md files (or plain markdown). Start with
+`skills/notion-shared/SKILL.md`, then the command-group skills.
 
 ---
 

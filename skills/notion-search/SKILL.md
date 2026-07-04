@@ -1,7 +1,7 @@
 ---
 name: notion-search
 description: Search, block, comment, and user commands for notion-agent-cli
-type: service
+license: MIT
 ---
 
 # notion-agent-cli — Search, Block, Comment & User Commands
@@ -94,8 +94,8 @@ notion user me   # get your own user info
 
 User IDs are used when setting `people` type properties:
 ```bash
-# Get your user ID
-my_id=$(notion user me --output json | jq -r '.id')
+# Get your user ID (output is JSON by default)
+my_id=$(notion user me | jq -r '.id')
 
 # Assign yourself to a task
 notion page set <page-id> "Assignee=$my_id"

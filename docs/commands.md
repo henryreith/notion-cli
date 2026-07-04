@@ -21,7 +21,7 @@ Interactive wizard — prompts for token, saves to config, tests connection.
 Store a token directly without the wizard.
 
 ```bash
-notion auth set-token secret_xxxx...
+notion auth set-token ntn_xxxx...
 ```
 
 ### `notion auth test`
@@ -103,7 +103,7 @@ Insert a row or update existing if match found.
 
 | Flag | Description |
 |------|-------------|
-| `--match PROP:VALUE` | Match condition (required) |
+| `--match PROP:VALUE` | Match condition (required; repeatable — multiple matches AND together) |
 | `KEY=VALUE` | Property values |
 | `--data JSON` | Properties as JSON |
 | `--add-options` | Auto-create missing select options |

@@ -216,28 +216,33 @@ export function registerDb(program: Command): void {
   // db upsert
   db.command('upsert <db-id> [kv...]')
     .description('Insert or update a row matching --match criteria')
-    .requiredOption('--match <PROP:VALUE>', 'Match property:value')
+    .requiredOption('--match <PROP:VALUE>', 'Match property:value (repeatable, AND logic)', collect, [])
     .option('--data <input>', 'JSON input: inline, @file, or -')
     .option('--add-options', 'Auto-create missing select/multi_select options')
     .option('--no-cache', 'Skip schema cache')
     .action(async (dbId: string, kv: string[], opts: {
-      match: string
+      match: string[]
       data?: string
       addOptions?: boolean
       cache: boolean
     }) => {
+      // requiredOption + a [] default means commander won't enforce presence itself
+      if (!opts.match.length) die(ExitCode.VALIDATION, 'Missing --match. Expected --match PROP:VALUE')
+
       const client = createNotionClient()
       const id = normaliseId(dbId)
       const schema = await resolver.getSchema(id, client, { noCache: !opts.cache })
 
-      const matchParts = opts.match.split(':')
-      if (matchParts.length < 2) die(ExitCode.VALIDATION, 'Invalid --match format. Expected PROP:VALUE')
-      const matchProp = matchParts[0]!
-      const matchValue = matchParts.slice(1).join(':')
-
-      const propSchema = resolver.findProperty(schema, matchProp)
-      const propType = propSchema?.type ?? 'rich_text'
-      const filterCond = buildTypedFilter(matchProp, '=', matchValue, propType)
+      const conditions = opts.match.map(m => {
+        const matchParts = m.split(':')
+        if (matchParts.length < 2) die(ExitCode.VALIDATION, `Invalid --match format: ${m}. Expected PROP:VALUE`)
+        const matchProp = matchParts[0]!
+        const matchValue = matchParts.slice(1).join(':')
+        const propSchema = resolver.findProperty(schema, matchProp)
+        const propType = propSchema?.type ?? 'rich_text'
+        return buildTypedFilter(matchProp, '=', matchValue, propType)
+      })
+      const filterCond = conditions.length === 1 ? conditions[0] : { and: conditions }
 
       const res = await client.dataSources.query({
         data_source_id: id,
@@ -245,7 +250,7 @@ export function registerDb(program: Command): void {
       })
 
       if (res.results.length > 1) {
-        die(ExitCode.AMBIGUOUS, `Upsert matched ${res.results.length} rows`, { property: matchProp, value: matchValue })
+        die(ExitCode.AMBIGUOUS, `Upsert matched ${res.results.length} rows`, { match: opts.match })
       }
 
       let raw: Record<string, string | string[]> = parseKV(kv)

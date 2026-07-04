@@ -1,7 +1,7 @@
 ---
 name: notion-knowledge-base
 description: Recipe — build and maintain a Notion knowledge base with notion-agent-cli
-type: recipe
+license: MIT
 ---
 
 # Recipe: Build & Maintain a Knowledge Base in Notion

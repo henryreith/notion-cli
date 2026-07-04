@@ -12,6 +12,8 @@
   "files": [
     "dist",
     "docs",
+    "skills",
+    ".claude-plugin",
     "README.md",
     "AGENTS.md",
     "LICENSE"

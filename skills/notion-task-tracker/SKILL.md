@@ -1,7 +1,7 @@
 ---
 name: notion-task-tracker
 description: Recipe — task tracking workflow with notion-agent-cli
-type: recipe
+license: MIT
 ---
 
 # Recipe: Task Tracker in Notion

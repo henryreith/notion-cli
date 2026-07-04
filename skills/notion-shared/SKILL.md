@@ -1,7 +1,7 @@
 ---
 name: notion-shared
 description: Prerequisites and common patterns for notion-agent-cli — auth, IDs, exit codes, --data, --output
-type: service
+license: MIT
 ---
 
 # notion-agent-cli — Shared Patterns
@@ -17,10 +17,10 @@ notion auth setup   # interactive wizard (opens browser)
 
 ```bash
 # Option 1: environment variable (preferred for agents/scripts)
-export NOTION_API_KEY=secret_xxx
+export NOTION_API_KEY=ntn_xxx
 
 # Option 2: persisted config (for interactive use)
-notion auth set-token secret_xxx
+notion auth set-token ntn_xxx
 notion auth status   # shows token prefix + test result
 notion auth test     # quick connectivity check
 ```

@@ -1,7 +1,7 @@
 ---
 name: notion-db
 description: Database commands for notion-agent-cli — schema, query, add, upsert, batch, update-schema
-type: service
+license: MIT
 ---
 
 # notion-agent-cli — Database Commands
@@ -43,9 +43,9 @@ notion db query <db-id> --output table             # human-readable
 | `=` | text, select, checkbox, date, number |
 | `!=` | text, select |
 | `contains` | text, multi_select |
-| `not_contains` | text, multi_select |
-| `starts_with` | text |
-| `>` `<` `>=` `<=` | number, date |
+| `does_not_contain` | text, multi_select |
+| `starts_with` / `ends_with` | text |
+| `>` `<` `>=` `<=` | number |
 | `is_empty` | any |
 | `is_not_empty` | any |
 
@@ -189,5 +189,5 @@ Add or modify properties on an existing database:
 
 ```bash
 notion db update-schema <db-id> --data @schema-patch.json
-notion db update-schema <db-id> --data '{"new_prop": {"type": "rich_text"}}'
+notion db update-schema <db-id> --data '{"Notes": {"rich_text": {}}}'
 ```

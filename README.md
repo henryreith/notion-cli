@@ -85,17 +85,37 @@ All 22 Notion MCP tools as CLI commands, plus 10+ higher-level helpers:
 | Pagination | `--page-all` | Fetch all pages automatically |
 | IDs output | `--output ids` | One ID per line, perfect for xargs piping |
 
-## Skills for Claude
+## Agent Skills (Claude, and any other agent)
 
-Install the skill so Claude can call Notion with zero token overhead when idle:
+Six ready-made skills live in [`skills/`](skills/), following the
+[Agent Skills](https://agentskills.io) open standard (`skills/<name>/SKILL.md`).
+They cost ~0 tokens when idle and only load when the agent decides to call Notion —
+unlike MCP, which loads unconditionally every session.
 
-```bash
-# The .claude-plugin/ directory is already set up in this repo
-# Claude will discover it automatically when working in this directory
+### Claude Code (plugin)
+
+```
+/plugin marketplace add henryreith/notion-cli
+/plugin install notion-agent@notion-cli
 ```
 
-The skill definition costs ~0 tokens when not in use. It only loads when Claude decides
-to call Notion — unlike MCP, which loads unconditionally every session.
+That's it — the skills (`notion-shared`, `notion-db`, `notion-page`, `notion-search`,
+plus the `knowledge-base` and `task-tracker` recipes) become available in every session.
+
+### Any other agent
+
+The skills are plain markdown with `name`/`description` frontmatter — no Claude-specific
+features. To use them with any agent that can run shell commands:
+
+1. `npm install -g notion-agent-cli` and set `NOTION_API_KEY`
+2. Point your agent at the skills, whichever way it ingests context:
+   - copy `skills/` into your agent's skill directory (Agent Skills-compatible tools pick them up as-is)
+   - or drop the SKILL.md contents into its system prompt / knowledge base
+   - the npm package also ships the skills: `node_modules/notion-agent-cli/skills/`
+3. Start with `notion-shared` (auth, IDs, exit codes), add command-group skills as needed
+
+Since the CLI is just a subprocess with JSON output and stable exit codes, any agent
+framework that can execute shell commands gets full Notion access from these docs alone.
 
 ## Command Reference
 
@@ -113,7 +133,7 @@ notion db schema <db-id> [--refresh] [--output json|properties|options]
 notion db query <db-id> [--filter PROP:OP:VALUE]... [--sort PROP] [--limit N] [--page-all] [--output json|table|ids]
 notion db info <db-id>
 notion db add <db-id> [KEY=VALUE]... [--data JSON|@file|-] [--add-options] [--output json|id]
-notion db upsert <db-id> --match PROP:VALUE [KEY=VALUE]... [--add-options]
+notion db upsert <db-id> --match PROP:VALUE [--match PROP:VALUE]... [KEY=VALUE]... [--add-options]
 notion db update-row <page-id> [KEY=VALUE]... [--data JSON]
 notion db add-option <db-id> <prop> --option NAME [--color COLOR]
 notion db batch-add <db-id> --data @file|- [--dry-run] [--continue-on-error]
@@ -158,7 +178,7 @@ notion user me
 
 ```bash
 # Set env vars — no prompts, no config file needed
-export NOTION_API_KEY=secret_xxxx...
+export NOTION_API_KEY=ntn_xxxx...
 export NOTION_MODE=auto
 
 # All commands output JSON to stdout, errors as JSON to stderr

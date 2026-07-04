@@ -1,7 +1,7 @@
 ---
 name: notion-page
 description: Page commands for notion-agent-cli — create, get, set properties, append content, delete
-type: service
+license: MIT
 ---
 
 # notion-agent-cli — Page Commands
@@ -68,8 +68,10 @@ notion page append <page-id> --data @blocks.json
 cat report.md | notion page append <page-id> --data -
 ```
 
-Supported Markdown elements: headings (h1–h3), paragraphs, bullet lists, numbered lists,
-to-do items (`- [ ]`/`- [x]`), code blocks (fenced), bold, italic, inline code.
+Supported Markdown elements: headings (h1–h3), paragraphs, bullet lists, numbered
+lists, quotes (`>`), fenced code blocks, and dividers (`---`). Inline formatting
+(bold/italic/code) and to-dos are passed through as plain text — use raw block
+JSON if you need those.
 
 ## page delete
 

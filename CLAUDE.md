@@ -20,7 +20,7 @@ src/
   output.ts         # printJSON / printTable / printIds / printId
   coerce.ts         # buildFilter(), coerceProperties(), parseKV(), markdownToBlocks()
   schema.ts         # SchemaCache (disk JSON, 15-min TTL) + PropertyResolver
-  modes.ts          # getMode(), confirm() — auto/interactive/ci
+  modes.ts          # getMode(), confirmDestructive() — auto/interactive/ci + delete gate
   config.ts         # readToken(), writeToken() — ~/.config/notion-agent/config.json
   commands/
     auth.ts         # auth setup, set-token, test, status
@@ -75,7 +75,7 @@ notion db query <db-id> [--filter PROP:OP:VALUE]... [--filter-logic and|or] [--s
 notion db info <db-id>
 notion db list-templates <db-id>
 notion db add <db-id> [KEY=VALUE]... [--data JSON|@file|-] [--add-options] [--output json|id]
-notion db upsert <db-id> --match PROP:VALUE [KEY=VALUE]... [--data JSON] [--add-options]
+notion db upsert <db-id> --match PROP:VALUE [--match PROP:VALUE]... [KEY=VALUE]... [--data JSON] [--add-options]
 notion db update-row <page-id> [KEY=VALUE]... [--data JSON]
 notion db add-option <db-id> <property> --option NAME [--option NAME2] [--color COLOR]
 notion db batch-add <db-id> --data @file|- [--add-options] [--dry-run] [--continue-on-error]
@@ -171,21 +171,23 @@ Mode detection: `--mode` flag → `NOTION_MODE` env → TTY detection
 | M9 | Integration tests + CI/CD (GitHub Actions for Node.js) | COMPLETE |
 | M10 | Polish: skills, AGENTS.md, README, npm publish setup | COMPLETE |
 
-## Skills and Plugin Manifest Sync
+## Skills and Plugin
 
-Skills live in `.claude/skills/*.md`. The plugin manifest is at `.claude-plugin/plugin.json`.
+Skills live in `skills/<name>/SKILL.md` (repo root), following the
+[Agent Skills](https://agentskills.io) open standard: frontmatter is just
+`name`, `description`, `license` — no Claude-specific fields, so the skills
+stay portable to other agents. The npm package ships them (`files` includes
+`skills`).
 
-**Rule:** Every `.claude/skills/<name>.md` file must have a matching entry in `.claude-plugin/plugin.json`, and vice versa. Keep them in sync.
+The repo is also a Claude Code plugin: `.claude-plugin/plugin.json` (manifest)
++ `.claude-plugin/marketplace.json` (so `/plugin marketplace add
+henryreith/notion-cli` works). Skills are auto-discovered from `skills/` —
+there is NO per-skill list to keep in sync.
 
-When adding a skill:
-1. Create `.claude/skills/<name>.md`
-2. Add entry to `.claude-plugin/plugin.json` under `"skills"`:
-   ```json
-   { "name": "<name>", "path": "../.claude/skills/<name>.md", "description": "<one-liner>" }
-   ```
-3. Update the Command Reference in `CLAUDE.md` if new commands are introduced.
-
-When removing a skill: delete the `.md` file and remove the plugin.json entry.
+When adding a skill: create `skills/<name>/SKILL.md` and update the Command
+Reference here if new commands are introduced. When removing: delete the
+directory. Keep skill content truthful to actual CLI behavior — verify flags
+and examples against `src/commands/` before documenting them.
 
 ## Testing
 

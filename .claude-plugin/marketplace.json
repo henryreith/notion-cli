@@ -1,0 +1,16 @@
+{
+  "name": "notion-cli",
+  "owner": {
+    "name": "Henry Reith"
+  },
+  "description": "notion-agent-cli plugin marketplace",
+  "plugins": [
+    {
+      "name": "notion-agent",
+      "source": "./",
+      "description": "Zero-overhead Notion API CLI for AI agents — db, page, block, comment, search, user commands. No MCP token overhead.",
+      "category": "productivity",
+      "tags": ["notion", "cli", "automation", "agents"]
+    }
+  ]
+}

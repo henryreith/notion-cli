@@ -22,14 +22,14 @@ This prompts for your Notion integration token, saves it to
 **Or set the token directly:**
 
 ```bash
-notion auth set-token secret_xxxx...
+notion auth set-token ntn_xxxx...
 notion auth test
 ```
 
 **For scripts and agents** — use an environment variable instead of the config file:
 
 ```bash
-export NOTION_API_KEY=secret_xxxx...
+export NOTION_API_KEY=ntn_xxxx...
 notion auth test
 ```
 
