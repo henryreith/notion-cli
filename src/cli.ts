@@ -14,7 +14,7 @@ const program = new Command()
 program
   .name('notion')
   .description('Zero-overhead CLI for the Notion API')
-  .version('0.2.1')
+  .version('0.2.2')
   .option('--mode <mode>', 'Operating mode: auto|interactive|ci')
   .option('--profile <name>', 'Use a named profile (overrides NOTION_PROFILE env)')
 

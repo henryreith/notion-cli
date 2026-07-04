@@ -1,6 +1,6 @@
 {
   "name": "notion-agent-cli",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Zero-overhead CLI for the Notion API — for AI agents, scripts, and automation",
   "type": "module",
   "bin": {
