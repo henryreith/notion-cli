@@ -1,6 +1,6 @@
 ---
 name: notion-page
-description: Page commands for notion-agent-cli — create, get, set properties, append content, delete
+description: Create, read, and edit Notion pages with the notion CLI — properties, markdown append, full-page markdown read/write, delete/restore, move. Use when reading page content or writing documents, notes, and reports into Notion.
 license: MIT
 ---
 

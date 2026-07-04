@@ -186,8 +186,14 @@ there is NO per-skill list to keep in sync.
 
 When adding a skill: create `skills/<name>/SKILL.md` and update the Command
 Reference here if new commands are introduced. When removing: delete the
-directory. Keep skill content truthful to actual CLI behavior — verify flags
-and examples against `src/commands/` before documenting them.
+directory. Skill descriptions are trigger-oriented ("what it does + when to
+use it"); heavy detail goes in `references/*.md` files linked one level deep
+from SKILL.md.
+
+Docs drift is enforced: `tests/unit/skills-docs.test.ts` validates every
+`notion` command and flag in skills/ and docs/ bash blocks against the actual
+commander program. If it fails, the docs are wrong (or the CLI changed) — fix
+whichever is lying.
 
 ## Testing
 

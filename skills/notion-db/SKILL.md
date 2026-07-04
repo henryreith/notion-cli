@@ -1,6 +1,6 @@
 ---
 name: notion-db
-description: Database commands for notion-agent-cli — schema, query, add, upsert, batch, update-schema
+description: Read and write Notion database rows with the notion CLI — schema inspection, filtered queries, add, upsert, batch import, schema updates. Use when working with structured Notion data: tasks, trackers, CRM rows, content databases.
 license: MIT
 ---
 
@@ -68,7 +68,8 @@ notion db add <db-id> --data '{"Name": "My Page", "Status": "Active"}'
 # From file, get back the page ID
 notion db add <db-id> --data @props.json --output id
 
-# Auto-create missing select options (otherwise exits 3)
+# Explicitly create missing select options in the schema before inserting
+# (updates the schema + cache, rather than relying on API-side implicit creation)
 notion db add <db-id> "Status=New Option" --add-options
 ```
 

@@ -1,6 +1,6 @@
 ---
 name: notion-shared
-description: Prerequisites and common patterns for notion-agent-cli — auth, IDs, exit codes, --data, --output
+description: Prerequisites for calling Notion from the notion CLI — auth setup, finding IDs, exit codes, --data input, output modes, error parsing. Read this first before using any notion command; other notion-* skills assume it.
 license: MIT
 ---
 
@@ -112,6 +112,12 @@ export NOTION_MODE=ci
 # Trusted bulk pipelines can skip --confirm globally
 export NOTION_AUTO_CONFIRM=1
 ```
+
+## When Something Fails
+
+If a command exits non-zero and the fix isn't obvious from the error JSON,
+read [references/troubleshooting.md](references/troubleshooting.md) — exit code
+diagnosis, 403 integration-sharing walkthrough, rate limits, stale schema cache.
 
 ## Error Parsing
 

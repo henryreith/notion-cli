@@ -1,6 +1,6 @@
 ---
 name: notion-search
-description: Search, block, comment, and user commands for notion-agent-cli
+description: Find things in a Notion workspace and work with blocks, comments, and users via the notion CLI. Use when locating a page/database by name, editing individual blocks, commenting, or resolving user IDs for people properties.
 license: MIT
 ---
 

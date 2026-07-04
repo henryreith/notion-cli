@@ -1,6 +1,6 @@
 ---
 name: notion-task-tracker
-description: Recipe — task tracking workflow with notion-agent-cli
+description: End-to-end recipe: run a task tracker in Notion with the notion CLI — schema, adding and querying tasks, status updates, standup reports. Use when managing todos, sprints, or project work items in a Notion database.
 license: MIT
 ---
 
@@ -25,7 +25,6 @@ notion db update-schema "$DB_ID" --data @task-schema.json
 ```json
 {
   "Status": {
-    "type": "select",
     "select": {
       "options": [
         {"name": "Backlog", "color": "gray"},
@@ -38,7 +37,6 @@ notion db update-schema "$DB_ID" --data @task-schema.json
     }
   },
   "Priority": {
-    "type": "select",
     "select": {
       "options": [
         {"name": "Critical", "color": "red"},
@@ -48,10 +46,10 @@ notion db update-schema "$DB_ID" --data @task-schema.json
       ]
     }
   },
-  "Assignee": {"type": "people", "people": {}},
-  "Due Date": {"type": "date", "date": {}},
-  "Estimate": {"type": "number", "number": {"format": "number"}},
-  "Tags": {"type": "multi_select", "multi_select": {"options": []}}
+  "Assignee": {"people": {}},
+  "Due Date": {"date": {}},
+  "Estimate": {"number": {"format": "number"}},
+  "Tags": {"multi_select": {"options": []}}
 }
 ```
 
@@ -88,7 +86,7 @@ notion db batch-add "$DB_ID" --data @backlog.json
 notion db query "$DB_ID" --filter "Status:=:In Progress" --output table
 
 # My tasks (using user ID)
-MY_ID=$(notion user me --output json | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
+MY_ID=$(notion user me | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
 notion db query "$DB_ID" --filter "Status:!=:Done" --output json | \
   python3 -c "
 import sys, json

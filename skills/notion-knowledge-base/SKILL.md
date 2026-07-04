@@ -1,6 +1,6 @@
 ---
 name: notion-knowledge-base
-description: Recipe — build and maintain a Notion knowledge base with notion-agent-cli
+description: End-to-end recipe: build and maintain a tagged knowledge base in Notion with the notion CLI — schema, batch import with auto-created tags, freshness sweeps. Use when setting up or operating a docs/KB database for a team or agent.
 license: MIT
 ---
 
@@ -27,7 +27,6 @@ Example `kb-schema.json`:
 ```json
 {
   "Category": {
-    "type": "select",
     "select": {
       "options": [
         {"name": "Architecture", "color": "blue"},
@@ -37,9 +36,8 @@ Example `kb-schema.json`:
       ]
     }
   },
-  "Tags": {"type": "multi_select", "multi_select": {"options": []}},
+  "Tags": {"multi_select": {"options": []}},
   "Status": {
-    "type": "select",
     "select": {
       "options": [
         {"name": "Draft", "color": "gray"},
@@ -49,9 +47,9 @@ Example `kb-schema.json`:
       ]
     }
   },
-  "Owner": {"type": "people", "people": {}},
-  "Last Reviewed": {"type": "date", "date": {}},
-  "Source URL": {"type": "url", "url": {}}
+  "Owner": {"people": {}},
+  "Last Reviewed": {"date": {}},
+  "Source URL": {"url": {}}
 }
 ```
 

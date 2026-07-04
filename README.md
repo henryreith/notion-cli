@@ -87,10 +87,12 @@ All 22 Notion MCP tools as CLI commands, plus 10+ higher-level helpers:
 
 ## Agent Skills (Claude, and any other agent)
 
-Six ready-made skills live in [`skills/`](skills/), following the
-[Agent Skills](https://agentskills.io) open standard (`skills/<name>/SKILL.md`).
-They cost ~0 tokens when idle and only load when the agent decides to call Notion —
-unlike MCP, which loads unconditionally every session.
+Eight ready-made skills live in [`skills/`](skills/) ([index](skills/README.md)),
+following the [Agent Skills](https://agentskills.io) open standard
+(`skills/<name>/SKILL.md`). They cost ~0 tokens when idle and only load when the
+agent decides to call Notion — unlike MCP, which loads unconditionally every
+session. Every documented command and flag is CI-validated against the actual
+CLI, so the skills can't drift from the implementation.
 
 ### Claude Code (plugin)
 
@@ -100,7 +102,8 @@ unlike MCP, which loads unconditionally every session.
 ```
 
 That's it — the skills (`notion-shared`, `notion-db`, `notion-page`, `notion-search`,
-plus the `knowledge-base` and `task-tracker` recipes) become available in every session.
+`notion-schema-design`, plus the `backup-sync`, `knowledge-base`, and `task-tracker`
+recipes) become available in every session.
 
 ### Any other agent
 
