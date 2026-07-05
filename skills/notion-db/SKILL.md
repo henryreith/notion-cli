@@ -1,7 +1,11 @@
 ---
 name: notion-db
-description: Read and write Notion database rows with the notion CLI — schema inspection, filtered queries, add, upsert, batch import, schema updates. Use when working with structured Notion data: tasks, trackers, CRM rows, content databases.
+description: Read and write Notion database rows with the notion CLI — schema inspection, filtered queries, add, upsert, batch import, schema updates. Use when working with structured Notion data such as tasks, trackers, CRM rows, and content databases.
 license: MIT
+compatibility: Requires the notion CLI (npm i -g notion-agent-cli) and a Notion integration token (NOTION_API_KEY).
+metadata:
+  author: henryreith
+  repository: https://github.com/henryreith/notion-cli
 ---
 
 # notion-agent-cli — Database Commands

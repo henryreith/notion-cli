@@ -1,7 +1,11 @@
 ---
 name: notion-knowledge-base
-description: End-to-end recipe: build and maintain a tagged knowledge base in Notion with the notion CLI — schema, batch import with auto-created tags, freshness sweeps. Use when setting up or operating a docs/KB database for a team or agent.
+description: End-to-end recipe for building and maintaining a tagged knowledge base in Notion with the notion CLI — schema, batch import with auto-created tags, freshness sweeps. Use when setting up or operating a docs/KB database for a team or agent.
 license: MIT
+compatibility: Requires the notion CLI (npm i -g notion-agent-cli) and a Notion integration token (NOTION_API_KEY).
+metadata:
+  author: henryreith
+  repository: https://github.com/henryreith/notion-cli
 ---
 
 # Recipe: Build & Maintain a Knowledge Base in Notion

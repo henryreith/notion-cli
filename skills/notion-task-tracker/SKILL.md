@@ -1,7 +1,11 @@
 ---
 name: notion-task-tracker
-description: End-to-end recipe: run a task tracker in Notion with the notion CLI — schema, adding and querying tasks, status updates, standup reports. Use when managing todos, sprints, or project work items in a Notion database.
+description: End-to-end recipe for running a task tracker in Notion with the notion CLI — schema, adding and querying tasks, status updates, standup reports. Use when managing todos, sprints, or project work items in a Notion database.
 license: MIT
+compatibility: Requires the notion CLI (npm i -g notion-agent-cli) and a Notion integration token (NOTION_API_KEY).
+metadata:
+  author: henryreith
+  repository: https://github.com/henryreith/notion-cli
 ---
 
 # Recipe: Task Tracker in Notion

@@ -2,6 +2,10 @@
 name: notion-shared
 description: Prerequisites for calling Notion from the notion CLI — auth setup, finding IDs, exit codes, --data input, output modes, error parsing. Read this first before using any notion command; other notion-* skills assume it.
 license: MIT
+compatibility: Requires the notion CLI (npm i -g notion-agent-cli) and a Notion integration token (NOTION_API_KEY).
+metadata:
+  author: henryreith
+  repository: https://github.com/henryreith/notion-cli
 ---
 
 # notion-agent-cli — Shared Patterns

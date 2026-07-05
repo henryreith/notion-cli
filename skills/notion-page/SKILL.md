@@ -2,6 +2,10 @@
 name: notion-page
 description: Create, read, and edit Notion pages with the notion CLI — properties, markdown append, full-page markdown read/write, delete/restore, move. Use when reading page content or writing documents, notes, and reports into Notion.
 license: MIT
+compatibility: Requires the notion CLI (npm i -g notion-agent-cli) and a Notion integration token (NOTION_API_KEY).
+metadata:
+  author: henryreith
+  repository: https://github.com/henryreith/notion-cli
 ---
 
 # notion-agent-cli — Page Commands

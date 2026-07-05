@@ -1,9 +1,19 @@
 # notion-agent-cli
 
-[![npm](https://img.shields.io/npm/v/notion-agent-cli)](https://www.npmjs.com/package/notion-agent-cli)
+[![npm version](https://img.shields.io/npm/v/notion-agent-cli)](https://www.npmjs.com/package/notion-agent-cli)
+[![npm downloads](https://img.shields.io/npm/dm/notion-agent-cli)](https://www.npmjs.com/package/notion-agent-cli)
+[![unpacked size](https://img.shields.io/npm/unpacked-size/notion-agent-cli)](https://www.npmjs.com/package/notion-agent-cli)
+[![types](https://img.shields.io/npm/types/notion-agent-cli)](https://www.npmjs.com/package/notion-agent-cli)
 [![Node.js >=18](https://img.shields.io/node/v/notion-agent-cli)](https://www.npmjs.com/package/notion-agent-cli)
-[![CI](https://github.com/henryreith/notion-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/henryreith/notion-cli/actions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![provenance](https://img.shields.io/badge/provenance-OIDC_signed-blue)](https://www.npmjs.com/package/notion-agent-cli#provenance)
+[![CI](https://github.com/henryreith/notion-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/henryreith/notion-cli/actions/workflows/ci.yml)
+[![Release](https://github.com/henryreith/notion-cli/actions/workflows/release.yml/badge.svg)](https://github.com/henryreith/notion-cli/actions/workflows/release.yml)
+[![Publish](https://github.com/henryreith/notion-cli/actions/workflows/publish.yml/badge.svg)](https://github.com/henryreith/notion-cli/actions/workflows/publish.yml)
+[![Agent Skills](https://img.shields.io/badge/Agent_Skills-11_skills-8A2BE2)](skills/README.md)
+[![Claude Code plugin](https://img.shields.io/badge/Claude_Code-plugin-D97757)](#claude-code-plugin)
+[![license](https://img.shields.io/github/license/henryreith/notion-cli)](LICENSE)
+[![last commit](https://img.shields.io/github/last-commit/henryreith/notion-cli)](https://github.com/henryreith/notion-cli/commits/main)
+[![stars](https://img.shields.io/github/stars/henryreith/notion-cli)](https://github.com/henryreith/notion-cli/stargazers)
 
 > Zero-overhead Notion CLI for AI agents, shell scripts, and automation.
 > Full parity with the Notion MCP server — without the token cost.
@@ -87,12 +97,14 @@ All 22 Notion MCP tools as CLI commands, plus 10+ higher-level helpers:
 
 ## Agent Skills (Claude, and any other agent)
 
-Eight ready-made skills live in [`skills/`](skills/) ([index](skills/README.md)),
+Eleven ready-made skills live in [`skills/`](skills/) ([index](skills/README.md)),
 following the [Agent Skills](https://agentskills.io) open standard
-(`skills/<name>/SKILL.md`). They cost ~0 tokens when idle and only load when the
-agent decides to call Notion — unlike MCP, which loads unconditionally every
-session. Every documented command and flag is CI-validated against the actual
-CLI, so the skills can't drift from the implementation.
+(`skills/<name>/SKILL.md`, validated with the official `skills-ref` tool). They
+cost ~0 tokens when idle and only load when the agent decides to call Notion —
+unlike MCP, which loads unconditionally every session. Every documented command
+and flag is CI-validated against the actual CLI, so the skills can't drift from
+the implementation. Want a workflow we don't ship? See
+[Build your own skill](skills/README.md#build-your-own-skill).
 
 ### Claude Code (plugin)
 
@@ -102,13 +114,16 @@ CLI, so the skills can't drift from the implementation.
 ```
 
 That's it — the skills (`notion-shared`, `notion-db`, `notion-page`, `notion-search`,
-`notion-schema-design`, plus the `backup-sync`, `knowledge-base`, and `task-tracker`
-recipes) become available in every session.
+`notion-schema-design`, `notion-reporting`, `notion-capture`, plus the
+`backup-sync`, `crm-pipeline`, `knowledge-base`, and `task-tracker` recipes)
+become available in every session.
 
 ### Any other agent
 
-The skills are plain markdown with `name`/`description` frontmatter — no Claude-specific
-features. To use them with any agent that can run shell commands:
+The skills are plain markdown with spec-standard frontmatter (`name`,
+`description`, `compatibility`) — no Claude-specific features. Any agent that
+can run shell commands can use them: Codex, Cursor, or a personal/home agent
+like Hermes. To wire one up:
 
 1. `npm install -g notion-agent-cli` and set `NOTION_API_KEY`
 2. Point your agent at the skills, whichever way it ingests context:

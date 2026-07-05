@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync, readdirSync, statSync } from 'fs'
 import { join, relative } from 'path'
+import { parse as parseYaml } from 'yaml'
 import { Command } from 'commander'
 import { registerAuth } from '../../src/commands/auth.js'
 import { registerDb } from '../../src/commands/db.js'
@@ -148,6 +149,56 @@ const FILES = [
   join(ROOT, 'docs', 'commands.md'),
   join(ROOT, 'docs', 'agent-patterns.md'),
 ]
+
+// --- Agent Skills spec compliance (agentskills.io/specification) -----------
+
+describe('skills comply with the Agent Skills spec', () => {
+  const skillDirs = readdirSync(join(ROOT, 'skills')).filter(d =>
+    statSync(join(ROOT, 'skills', d)).isDirectory()
+  )
+
+  it('found the skill directories', () => {
+    expect(skillDirs.length).toBeGreaterThanOrEqual(8)
+  })
+
+  for (const dir of skillDirs) {
+    it(`${dir}: SKILL.md meets the spec`, () => {
+      const content = readFileSync(join(ROOT, 'skills', dir, 'SKILL.md'), 'utf-8')
+      const lines = content.split('\n')
+
+      // frontmatter block present and VALID YAML (regex alone missed real
+      // parse failures from unquoted colons — skills-ref caught them)
+      expect(lines[0], 'must start with frontmatter').toBe('---')
+      const end = lines.indexOf('---', 1)
+      expect(end, 'frontmatter must close').toBeGreaterThan(0)
+      const fm = parseYaml(lines.slice(1, end).join('\n')) as Record<string, unknown>
+
+      // name: 1-64 chars, lowercase/digits/hyphens, no leading/trailing/double hyphen,
+      // and must match the parent directory name
+      const name = fm['name'] as string | undefined
+      expect(name, 'name is required').toBeTruthy()
+      expect(name).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/)
+      expect(name!.length).toBeLessThanOrEqual(64)
+      expect(name, 'name must match directory').toBe(dir)
+
+      // description: required, 1-1024 chars
+      const description = fm['description'] as string | undefined
+      expect(description, 'description is required').toBeTruthy()
+      expect(description!.length).toBeGreaterThanOrEqual(1)
+      expect(description!.length).toBeLessThanOrEqual(1024)
+
+      // compatibility: optional, max 500 chars
+      const compatibility = fm['compatibility'] as string | undefined
+      if (compatibility) expect(compatibility.length).toBeLessThanOrEqual(500)
+
+      // metadata: optional string map per spec
+      if (fm['metadata']) expect(typeof fm['metadata']).toBe('object')
+
+      // body: keep under the spec's recommended 500 lines
+      expect(lines.length, 'SKILL.md should stay under 500 lines').toBeLessThan(500)
+    })
+  }
+})
 
 describe('skills and docs match the actual CLI', () => {
   const truth = groundTruth()

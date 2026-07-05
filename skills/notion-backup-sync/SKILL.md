@@ -2,6 +2,10 @@
 name: notion-backup-sync
 description: Round-trip content between local files and Notion with the notion CLI — publish markdown docs to pages, back up databases and pages to disk, restore from backup. Use when syncing a docs folder, exporting Notion data, or restoring content.
 license: MIT
+compatibility: Requires the notion CLI (npm i -g notion-agent-cli) and a Notion integration token (NOTION_API_KEY).
+metadata:
+  author: henryreith
+  repository: https://github.com/henryreith/notion-cli
 ---
 
 # Recipe: Backup & Sync — Markdown ⇄ Notion

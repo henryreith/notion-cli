@@ -2,6 +2,10 @@
 name: notion-schema-design
 description: Design and evolve Notion database schemas with the notion CLI — create databases, add or change properties, and get the exact JSON shape for every property type. Use when creating a new database or when db update-schema needs a property payload.
 license: MIT
+compatibility: Requires the notion CLI (npm i -g notion-agent-cli) and a Notion integration token (NOTION_API_KEY).
+metadata:
+  author: henryreith
+  repository: https://github.com/henryreith/notion-cli
 ---
 
 # notion-agent-cli — Schema Design

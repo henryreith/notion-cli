@@ -2,6 +2,10 @@
 name: notion-search
 description: Find things in a Notion workspace and work with blocks, comments, and users via the notion CLI. Use when locating a page/database by name, editing individual blocks, commenting, or resolving user IDs for people properties.
 license: MIT
+compatibility: Requires the notion CLI (npm i -g notion-agent-cli) and a Notion integration token (NOTION_API_KEY).
+metadata:
+  author: henryreith
+  repository: https://github.com/henryreith/notion-cli
 ---
 
 # notion-agent-cli — Search, Block, Comment & User Commands
